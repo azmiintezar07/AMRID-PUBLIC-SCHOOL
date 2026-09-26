@@ -1,0 +1,307 @@
+{
+  "school_info": {
+    "name": "AMRID PUBLIC SCHOOL",
+    "tagline": "Building Knowledge, Character & a Bright Future",
+    "reg_number": "21111402026220114055",
+    "description": "Providing a holistic learning environment for child development. We combine high-quality academic training, strict discipline, standard moral values, and basic Islamic education within a safe, secure, and deeply caring setting designed to prepare children for a bright and successful future.",
+    "about_title": "Where Learning Meets Values, Discipline & Care",
+    "about_text": "AMRID PUBLIC SCHOOL, located at Fatma Nagar, mandel, Baisi in Purnia, Bihar, was established in 2020 with a mission to deliver premier educational opportunities from Nursery to Class VIII.\n\nWe provide balanced trilingual academic learning in English, Hindi, and Urdu alongside foundational Islamic education. With separate residential hostels for boys and girls, round-the-clock CCTV surveillance, and a nutritious 3-time daily meal facility, our campus ensures a nurturing, secure environment where every child prospers.",
+    "show_leaders": true,
+    "logo_url": "/uploads/media-1786798848541-655607772.png",
+    "admission_info": "Admissions are currently open for academic session 2026–27 from Nursery to Class VIII. Parents are invited to fill the admission enquiry form online or visit the campus office for personal interaction and guided school tours."
+  },
+  "director_info": {
+    "name": "Md Danish Raza",
+    "designation": "Director",
+    "school_title": "AMRID Public School",
+    "phone": "+91 9905430743",
+    "message": "We established AMRID PUBLIC SCHOOL with a steadfast vision: to provide premier, value-grounded, and accessible education to families across Bihar. Our philosophy extends beyond standard rote examinations; we focus intensively on moral character, leadership qualities, trilingual mastery, and daily self-discipline. We are profoundly thankful to our parent community for their unwavering faith, which fuels our continuous pursuit of excellence.",
+    "photo_url": "/uploads/media-1787203605977-226500123.jpeg"
+  },
+  "principal_info": {
+    "name": "Md Noorain Raza",
+    "designation": "Principal",
+    "school_title": "AMRID Public School",
+    "phone": "+91 9693264161",
+    "message": "True academic excellence emerges when educators, students, and parents collaborate with shared purpose. At AMRID PUBLIC SCHOOL, our compassionate faculty nurtures every child's innate potential from their early nursery years through Class VIII. By intertwining rigorous modern curricula with foundational moral teachings, we prepare confident, disciplined young learners equipped to succeed in higher education and life.",
+    "photo_url": "/uploads/principal-portrait.jpg"
+  },
+  "hero_section": {
+    "badge": "Admissions Open 2026–27",
+    "title": "AMRID PUBLIC SCHOOL",
+    "tagline": "“Building Knowledge, Character & a Bright Future”",
+    "description": "Offering premier education from Nursery to Class VIII in English, Hindi & Urdu with foundational Islamic Studies, separate residential hostels, 24/7 CCTV surveillance, and hygienic 3-time meals daily in Baisi, Purnia.",
+    "button1_text": "Apply for Admission",
+    "button2_text": "Explore Our School",
+    "button3_text": "Contact Us",
+    "image_url": "/uploads/hero-campus.jpg"
+  },
+  "social_media": {
+    "instagram": "https://instagram.com/a.p.s.",
+    "facebook": "https://facebook.com/amridpublicschool",
+    "youtube": "https://youtube.com/@amridpublicschool",
+    "whatsapp": "9905430742"
+  },
+  "contact_settings": {
+    "address": "Fatma Nagar, mandel, Baisi, Purnia, Bihar",
+    "coordinates": "25.85635° N, 87.76090° E",
+    "google_maps_embed": "https://maps.google.com/maps?q=25.85635,87.76090&z=15&output=embed",
+    "google_maps_directions": "https://www.google.com/maps/dir/?api=1&destination=25.85635,87.76090",
+    "phone": "+91 9905430742",
+    "director_phone": "+91 9905430743",
+    "principal_phone": "+91 9693264161",
+    "email": "info@amridpublicschool.com",
+    "whatsapp": "9905430742"
+  },
+  "facilities": [
+    {
+      "id": "fac-1",
+      "title": "Separate Boys' Hostel",
+      "description": "Safe, dedicated residential boarding facility for male students with structured study hours and dedicated male wardens.",
+      "svg_id": "boys-hostel"
+    },
+    {
+      "id": "fac-2",
+      "title": "Separate Girls' Hostel",
+      "description": "Completely private, highly secure boarding accommodations for female students overseen by attentive female wardens.",
+      "svg_id": "girls-hostel"
+    },
+    {
+      "id": "fac-3",
+      "title": "CCTV Security",
+      "description": "24/7 comprehensive camera monitoring across campus gates, academic corridors, study rooms, and hostel perimeters.",
+      "svg_id": "camera"
+    },
+    {
+      "id": "fac-4",
+      "title": "3-Time Meal Facility",
+      "description": "Nutritious, fresh, and hygienically prepared breakfast, lunch, and dinner served daily under strict supervision.",
+      "svg_id": "meal"
+    },
+    {
+      "id": "fac-5",
+      "title": "Islamic Education",
+      "description": "Moral education, basic Islamic studies, Tajweed fundamentals, and ethical values integrated harmoniously with academics.",
+      "svg_id": "book"
+    },
+    {
+      "id": "fac-6",
+      "title": "Modern Learning Environment",
+      "description": "Bright, well-ventilated classrooms with child-friendly furniture, visual learning aids, and student-centered teaching.",
+      "svg_id": "classroom"
+    },
+    {
+      "id": "fac-7",
+      "title": "Safe & Secure Campus",
+      "description": "Gated perimeter security, regulated visitor access, and caring staff ensuring continuous protection for every student.",
+      "svg_id": "shield"
+    }
+  ],
+  "faculty_staff": [
+    {
+      "id": "staff-leader-1",
+      "name": "Md Danish Raza",
+      "designation": "Director",
+      "category": "leadership",
+      "subject": "School Management & Governance",
+      "qualification": "Post Graduate, Educational Management",
+      "experience": "10+ Years",
+      "photo_url": "/uploads/media-1787203605977-226500123.jpeg",
+      "bio": "Guiding institutional growth, educational policies, infrastructure advancement, and student-centric community development at AMRID Public School.",
+      "order": 1,
+      "is_active": true
+    },
+    {
+      "id": "staff-leader-2",
+      "name": "Md Noorain Raza",
+      "designation": "Principal",
+      "category": "leadership",
+      "subject": "Academic Direction & School Administration",
+      "qualification": "Master's Degree, B.Ed.",
+      "experience": "12+ Years",
+      "photo_url": "/uploads/principal-portrait.jpg",
+      "bio": "Steering pedagogy, faculty mentorship, curriculum enrichment, and holistic child development from Nursery foundation to Class VIII.",
+      "order": 2,
+      "is_active": true
+    },
+    {
+      "id": "staff-teach-1",
+      "name": "Faculty Member (Editable in Admin)",
+      "designation": "Mathematics Teacher",
+      "category": "teaching",
+      "subject": "Mathematics",
+      "qualification": "M.Sc. Mathematics, B.Ed.",
+      "experience": "6+ Years",
+      "photo_url": "",
+      "bio": "Specializes in developing arithmetic logic, problem-solving skills, and building student confidence in mathematical concepts.",
+      "order": 3,
+      "is_active": true
+    },
+    {
+      "id": "staff-teach-2",
+      "name": "Faculty Member (Editable in Admin)",
+      "designation": "Senior Urdu & Islamic Studies Faculty",
+      "category": "teaching",
+      "subject": "Urdu & Islamic Education",
+      "qualification": "M.A. Urdu, Fazil, B.Ed.",
+      "experience": "8+ Years",
+      "photo_url": "",
+      "bio": "Dedicated to linguistic proficiency, moral guidance, Quranic recitation fundamentals, and ethical character building.",
+      "order": 4,
+      "is_active": true
+    },
+    {
+      "id": "staff-teach-3",
+      "name": "Faculty Member (Editable in Admin)",
+      "designation": "Science & Environmental Studies Teacher",
+      "category": "teaching",
+      "subject": "Science & EVS",
+      "qualification": "B.Sc., D.El.Ed.",
+      "experience": "5+ Years",
+      "photo_url": "",
+      "bio": "Engages students through hands-on demonstrations, observational experiments, and curiosity-driven science learning.",
+      "order": 5,
+      "is_active": true
+    },
+    {
+      "id": "staff-teach-4",
+      "name": "Faculty Member (Editable in Admin)",
+      "designation": "English Language & Literature Teacher",
+      "category": "teaching",
+      "subject": "English & Grammar",
+      "qualification": "M.A. English, B.Ed.",
+      "experience": "5+ Years",
+      "photo_url": "",
+      "bio": "Fosters reading fluency, vocabulary development, public speaking, and creative writing skills in young learners.",
+      "order": 6,
+      "is_active": true
+    },
+    {
+      "id": "staff-admin-1",
+      "name": "Staff Member (Editable in Admin)",
+      "designation": "Administrative Officer & Office In-Charge",
+      "category": "admin",
+      "subject": "School Administration",
+      "qualification": "Graduate, Diploma in Computer Applications",
+      "experience": "7+ Years",
+      "photo_url": "",
+      "bio": "Handles parent queries, admission document processing, student records, and general campus administration efficiently.",
+      "order": 7,
+      "is_active": true
+    },
+    {
+      "id": "staff-supp-1",
+      "name": "Staff Member (Editable in Admin)",
+      "designation": "Hostel Superintendent & Student Welfare",
+      "category": "support",
+      "subject": "Hostel Care & Safety",
+      "qualification": "Graduate, Certified Student Care",
+      "experience": "6+ Years",
+      "photo_url": "",
+      "bio": "Maintains day-to-day discipline, meal routine supervision, cleanliness, and residential student health and well-being.",
+      "order": 8,
+      "is_active": true
+    }
+  ],
+  "hostel_info": {
+    "description": "AMRID PUBLIC SCHOOL offers disciplined, caring, and secure residential boarding. Designed with utmost care for students and peace of mind for parents, we provide structured supervision, comfortable living spaces, and standard amenities.",
+    "boys_hostel": "Dedicated secure residential hostel for boys with structured study sessions and male wardens.",
+    "girls_hostel": "Completely separate, secure residential hostel for girls managed by experienced female wardens.",
+    "bullets": [
+      "Separate Hostels for Boys & Girls: Private, independent blocks supervised by respective residential wardens.",
+      "24/7 CCTV Surveillance: Continuous security coverage across gates, perimeters, and common hallways.",
+      "3-Time Nutritious Meals Daily: Wholesome, hygienically cooked breakfast, lunch, and dinner prepared fresh.",
+      "Dedicated Study & Homework Hours: Supervised evening prep sessions ensuring steady academic progress.",
+      "Clean, Ventilated Rooms: Well-maintained bedspaces, clean washrooms, and healthy hygiene practices."
+    ],
+    "image_url": "/uploads/school-hostel.jpg"
+  },
+  "notices": [
+    {
+      "id": "not-1",
+      "title": "Admissions Open for Session 2026–27",
+      "text": "Admissions are officially open from Nursery to Class VIII for the 2026–27 academic session. Prospectus and admission enquiry forms can be submitted online or at the school admission desk.",
+      "date": "20 Feb 2026",
+      "category": "admission",
+      "is_important": true,
+      "is_published": true
+    },
+    {
+      "id": "not-2",
+      "title": "Hostel Seat Registrations (Boys & Girls)",
+      "text": "Hostel accommodation for newly enrolled students is allotted on a first-come, first-served basis. Parents seeking residential admission are requested to reserve seats early.",
+      "date": "15 Feb 2026",
+      "category": "general",
+      "is_important": false,
+      "is_published": true
+    }
+  ],
+  "events": [
+    {
+      "id": "evt-1",
+      "title": "Annual Academic Orientation & Welcome Assembly",
+      "description": "Welcoming students and parents for the 2026-27 academic session with curriculum orientation and faculty introduction.",
+      "date": "2026-04-05",
+      "time": "09:00 AM",
+      "location": "School Main Campus Ground",
+      "image_url": "/uploads/hero-campus.jpg",
+      "is_published": true
+    },
+    {
+      "id": "evt-2",
+      "title": "Independence Day Celebration & Assembly",
+      "description": "Cultural programs, speech delivery, prize distribution, and national flag hoisting ceremony.",
+      "date": "2026-08-15",
+      "time": "08:00 AM",
+      "location": "School Assembly Ground",
+      "image_url": "/uploads/media-1786800299423-540631780.jpeg",
+      "is_published": true
+    }
+  ],
+  "gallery": [
+    {
+      "id": "gal-1",
+      "type": "image",
+      "category": "campus",
+      "url": "/uploads/hero-campus.jpg",
+      "title": "Main Campus Building",
+      "description": "Front facade of AMRID Public School campus with lush lawns and arched architecture.",
+      "is_featured": true,
+      "order": 1,
+      "is_published": true
+    },
+    {
+      "id": "gal-2",
+      "type": "image",
+      "category": "classrooms",
+      "url": "/uploads/school-classroom.jpg",
+      "title": "Modern Interactive Classrooms",
+      "description": "Bright, engaging classroom environment with modern visual learning facilities.",
+      "is_featured": true,
+      "order": 2,
+      "is_published": true
+    },
+    {
+      "id": "gal-3",
+      "type": "image",
+      "category": "hostel",
+      "url": "/uploads/school-hostel.jpg",
+      "title": "Clean Residential Hostel Rooms",
+      "description": "Neat, comfortable, and well-ventilated dormitories for residential students.",
+      "is_featured": true,
+      "order": 3,
+      "is_published": true
+    },
+    {
+      "id": "gal-4",
+      "type": "image",
+      "category": "events",
+      "url": "/uploads/media-1786800299423-540631780.jpeg",
+      "title": "School Celebrations & Programs",
+      "description": "Students actively participating in annual activities and school assemblies.",
+      "is_featured": true,
+      "order": 4,
+      "is_published": true
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "amrid-public-school",
+  "version": "1.0.0",
+  "description": "Premium, modern, and highly responsive school website for AMRID PUBLIC SCHOOL",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server.js"
+  },
+  "devDependencies": {
+    "vite": "^5.4.1"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.2.0",
+    "puppeteer-core": "^25.7.0"
+  }
+}

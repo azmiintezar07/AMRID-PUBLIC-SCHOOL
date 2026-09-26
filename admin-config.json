@@ -1,0 +1,5 @@
+{
+  "username": "Azmi",
+  "passwordHash": "$2b$10$Ax/mDEHyNZebu238qTI49.IDydv.MdIParIe05MoeJL6Qchsv/sCW",
+  "jwtSecret": "amrid_public_school_super_secret_session_key_2026"
+}

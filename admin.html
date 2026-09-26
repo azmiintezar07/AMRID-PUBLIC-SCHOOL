@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | AMRID PUBLIC SCHOOL</title>
+  <link rel="icon" href="./school-badge-favicon.png?v=12345">
+  <script>
+    // Global Error Logger to show script crashes inline
+    window.addEventListener('error', function(e) {
+      var errBox = document.getElementById('runtime-error-box');
+      if (!errBox) {
+        errBox = document.createElement('div');
+        errBox.id = 'runtime-error-box';
+        errBox.style.cssText = 'background:#ffebeb; color:#d32f2f; border:2px solid #d32f2f; padding:15px; border-radius:6px; margin:20px; font-family:monospace; white-space:pre-wrap; z-index:99999; position:relative; font-size:13px; line-height:1.4; text-align:left;';
+        document.body.insertBefore(errBox, document.body.firstChild);
+      }
+      errBox.innerHTML += '<strong>Runtime Error:</strong> ' + e.message + '\nURL: ' + e.filename + '\nLine: ' + e.lineno + ', Col: ' + e.colno + '\n\n';
+    });
+  </script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- ==========================================
+       1. LOGIN SECTION (VISIBLE BY DEFAULT IF NO SESSION)
+       ========================================== -->
+  <div class="login-wrapper" id="login-section">
+    <div class="login-card">
+      <div class="login-logo">
+        <svg class="school-logo" viewBox="0 0 100 100" width="60" height="60">
+          <defs>
+            <linearGradient id="gold-grad-login" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#d4af37" />
+              <stop offset="100%" stop-color="#aa7c11" />
+            </linearGradient>
+            <linearGradient id="blue-grad-login" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#1b3a57" />
+              <stop offset="100%" stop-color="#0d233a" />
+            </linearGradient>
+          </defs>
+          <path d="M 50 5 L 85 20 V 55 C 85 75, 50 95, 50 95 C 50 95, 15 75, 15 55 V 20 Z" fill="url(#blue-grad-login)" stroke="url(#gold-grad-login)" stroke-width="3"/>
+          <path d="M 30 50 C 35 46, 45 46, 50 50 C 55 46, 65 46, 70 50 V 62 C 65 58, 55 58, 50 62 C 45 58, 35 58, 30 62 Z" fill="none" stroke="url(#gold-grad-login)" stroke-width="2.5"/>
+          <line x1="50" y1="50" x2="50" y2="62" stroke="url(#gold-grad-login)" stroke-width="2.5" />
+          <polygon points="50,22 53,30 61,30 55,35 57,43 50,38 43,43 45,35 39,30 47,30" fill="url(#gold-grad-login)"/>
+          <text x="50" y="78" font-family="'Outfit', sans-serif" font-weight="bold" font-size="12" fill="#ffffff" text-anchor="middle">APS</text>
+        </svg>
+        <h2>AMRID PUBLIC SCHOOL</h2>
+        <p>Administration Portal</p>
+      </div>
+
+      <div class="login-alert error" id="file-protocol-warning" style="display: none; background-color: #ffebeb; color: #d32f2f; border: 1px solid #d32f2f; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; line-height: 1.4; text-align: left;">
+        <strong>⚠️ Protocol Error:</strong> You are accessing the Admin Panel by opening the HTML file directly (<code>file://</code>). 
+        <br><br>
+        Please open your browser and navigate to:
+        <a href="http://localhost:8000/admin" target="_blank" style="color: #0d233a; font-weight: bold; text-decoration: underline;">http://localhost:8000/admin</a>.
+      </div>
+
+      <div class="login-alert error" id="login-error-alert" style="display: none;">
+        Invalid username or password. Please try again.
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-username">Admin Username / Email</label>
+          <input type="text" id="login-username" required placeholder="Enter admin username" autocapitalize="none" autocomplete="username" spellcheck="false">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="login-password" required placeholder="Enter admin password" autocomplete="current-password">
+            <button type="button" class="btn-toggle-password" id="toggle-password-btn" aria-label="Toggle Password Visibility">
+              <!-- Eye Icon -->
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-actions-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="login-remember"> Keep me logged in
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="login-submit-btn">
+          Secure Log In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       2. DASHBOARD CONTAINER (HIDDEN UNTIL AUTHENTICATED)
+       ========================================== -->
+  <div class="admin-container" id="admin-container" style="display: none;">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="logo-area">
+          <svg viewBox="0 0 100 100" width="36" height="36">
+            <path d="M 50 5 L 85 20 V 55 C 85 75, 50 95, 50 95 C 50 95, 15 75, 15 55 V 20 Z" fill="#1b3a57" stroke="#c5a059" stroke-width="3"/>
+            <text x="50" y="65" font-family="'Outfit', sans-serif" font-weight="bold" font-size="16" fill="#c5a059" text-anchor="middle">APS</text>
+          </svg>
+          <div class="logo-details">
+            <span class="logo-title">AMRID SCHOOL</span>
+            <span class="logo-subtitle">Admin Panel</span>
+          </div>
+        </div>
+        <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close sidebar">&times;</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+              <span class="icon">📊</span> Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="#homepage" class="nav-item" data-tab="homepage">
+              <span class="icon">🏠</span> Homepage Settings
+            </a>
+          </li>
+          <li>
+            <a href="#school-info" class="nav-item" data-tab="school-info">
+              <span class="icon">ℹ️</span> School Information
+            </a>
+          </li>
+          <li>
+            <a href="#faculty" class="nav-item" data-tab="faculty">
+              <span class="icon">👨‍🏫</span> Faculty & Staff Management
+            </a>
+          </li>
+          <li>
+            <a href="#gallery" class="nav-item" data-tab="gallery">
+              <span class="icon">🖼️</span> Gallery Management
+            </a>
+          </li>
+          <li>
+            <a href="#notices" class="nav-item" data-tab="notices">
+              <span class="icon">📢</span> Notices & Updates
+            </a>
+          </li>
+          <li>
+            <a href="#events" class="nav-item" data-tab="events">
+              <span class="icon">📅</span> Events Management
+            </a>
+          </li>
+          <li>
+            <a href="#hostel-facilities" class="nav-item" data-tab="hostel-facilities">
+              <span class="icon">🛏️</span> Hostel & Facilities
+            </a>
+          </li>
+          <li>
+            <a href="#enquiries" class="nav-item" data-tab="enquiries">
+              <span class="icon">📝</span> Admission Enquiries <span class="badge badge-accent" id="badge-new-enquiries" style="display: none;">0</span>
+            </a>
+          </li>
+          <li>
+            <a href="#messages" class="nav-item" data-tab="messages">
+              <span class="icon">✉️</span> Contact Messages <span class="badge badge-accent" id="badge-new-messages" style="display: none;">0</span>
+            </a>
+          </li>
+          <li>
+            <a href="#media-library" class="nav-item" data-tab="media-library">
+              <span class="icon">📁</span> Media Library
+            </a>
+          </li>
+          <li>
+            <a href="#social-settings" class="nav-item" data-tab="social-settings">
+              <span class="icon">🔗</span> Social & Contact Settings
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="logged-user">
+          <div class="user-avatar">AD</div>
+          <div class="user-details">
+            <span class="username" id="logged-username">admin</span>
+            <span class="role">School Administrator</span>
+          </div>
+        </div>
+        <button class="btn-logout" id="btn-logout-sidebar">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      
+      <!-- Top header bar -->
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="hamburger-toggle" id="admin-hamburger" aria-label="Toggle Sidebar Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <h1 id="page-title">Dashboard Overview</h1>
+        </div>
+        <div class="header-right">
+          <a href="/" target="_blank" class="btn btn-secondary btn-sm link-external-site">👁️ Visit Website</a>
+          <button class="btn btn-danger btn-sm" id="btn-logout-header">Log Out</button>
+        </div>
+      </header>
+
+      <!-- View Containers -->
+      <div class="content-wrapper">
+
+        <!-- ==========================================
+             TAB: DASHBOARD
+             ========================================== -->
+        <section class="tab-content active" id="tab-dashboard">
+          
+          <!-- Statistics Cards Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(197, 160, 89, 0.1); color: var(--accent-gold);">🖼️</div>
+              <div class="stat-info">
+                <h3>Gallery Media</h3>
+                <p class="stat-number" id="stat-gallery-count">0</p>
+                <span class="stat-desc">Photos & Videos</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(33, 150, 243, 0.1); color: #2196f3;">📢</div>
+              <div class="stat-info">
+                <h3>Total Notices</h3>
+                <p class="stat-number" id="stat-notices-count">0</p>
+                <span class="stat-desc">Published announcements</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(76, 175, 80, 0.1); color: #4caf50;">📅</div>
+              <div class="stat-info">
+                <h3>School Events</h3>
+                <p class="stat-number" id="stat-events-count">0</p>
+                <span class="stat-desc">Upcoming school events</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(0, 150, 136, 0.1); color: #009688;">👨‍🏫</div>
+              <div class="stat-info">
+                <h3>Faculty & Staff</h3>
+                <p class="stat-number" id="stat-faculty-count">0</p>
+                <span class="stat-desc" id="stat-faculty-active">0 active profiles</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(156, 39, 176, 0.1); color: #9c27b0;">📝</div>
+              <div class="stat-info">
+                <h3>Admission Enquiries</h3>
+                <p class="stat-number" id="stat-enquiries-count">0</p>
+                <span class="stat-desc" id="stat-enquiries-new">0 new/unread</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(244, 67, 54, 0.1); color: #f44336;">✉️</div>
+              <div class="stat-info">
+                <h3>Contact Messages</h3>
+                <p class="stat-number" id="stat-messages-count">0</p>
+                <span class="stat-desc" id="stat-messages-unread">0 unread</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions and Recent Activity -->
+          <div class="dashboard-details-row">
+            
+            <div class="details-card quick-actions-card">
+              <h2 class="card-title">Quick Actions</h2>
+              <div class="quick-actions-grid">
+                <button class="action-btn btn-tab-trigger" data-target-tab="faculty" onclick="openAddFacultyModal()">
+                  <span class="action-icon">➕👨‍🏫</span> Add Staff Profile
+                </button>
+                <button class="action-btn btn-tab-trigger" data-target-tab="notices" onclick="openAddNoticeModal()">
+                  <span class="action-icon">➕📢</span> Add Notice
+                </button>
+                <button class="action-btn btn-tab-trigger" data-target-tab="events" onclick="openAddEventModal()">
+                  <span class="action-icon">➕📅</span> Add Event
+                </button>
+                <button class="action-btn btn-tab-trigger" data-target-tab="gallery" onclick="openUploadGalleryModal()">
+                  <span class="action-icon">➕🖼️</span> Upload Gallery Photos
+                </button>
+                <button class="action-btn btn-tab-trigger" data-target-tab="media-library" onclick="triggerMediaUpload()">
+                  <span class="action-icon">📤📁</span> Upload File
+                </button>
+                <button class="action-btn btn-tab-trigger" data-target-tab="enquiries">
+                  <span class="action-icon">👁️📝</span> Review Enquiries
+                </button>
+                <button class="action-btn btn-tab-trigger" data-target-tab="messages">
+                  <span class="action-icon">👁️✉️</span> Read Messages
+                </button>
+              </div>
+            </div>
+
+            <div class="details-card recent-updates-card">
+              <h2 class="card-title">Recent Submissions</h2>
+              <div class="submissions-list" id="dashboard-recent-submissions">
+                <p class="empty-list-text">Loading recent entries...</p>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==========================================
+             TAB: HOMEPAGE SETTINGS
+             ========================================== -->
+        <section class="tab-content" id="tab-homepage">
+          <form id="form-homepage-settings" class="edit-form-panel">
+            <h2 class="section-heading">Hero Section Settings</h2>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="hero-badge">Hero Small Badge / Announcement Text</label>
+                <input type="text" id="hero-badge" name="hero_badge" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="hero-title">Hero Title Heading</label>
+                <input type="text" id="hero-title" name="hero_title" required>
+              </div>
+              <div class="form-group col-6">
+                <label for="hero-tagline">Hero Tagline / Subtitle</label>
+                <input type="text" id="hero-tagline" name="hero_tagline" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="hero-description">Hero Large Description</label>
+                <textarea id="hero-description" name="hero_description" rows="4" required></textarea>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="hero-btn1-text">Primary Button Text (Apply)</label>
+                <input type="text" id="hero-btn1-text" name="hero_btn1_text">
+              </div>
+              <div class="form-group col-6">
+                <label for="hero-btn2-text">Secondary Button Text (Enquiry)</label>
+                <input type="text" id="hero-btn2-text" name="hero_btn2_text">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="hero-image">Hero Background Image (Select from library / upload)</label>
+                <div class="input-select-media-wrapper">
+                  <input type="text" id="hero-image" name="hero_image_url" placeholder="Select image URL">
+                  <button type="button" class="btn btn-secondary btn-select-media" data-target-input="hero-image">Choose Media</button>
+                </div>
+                <div style="margin-top: 8px; display: flex; gap: 10px; align-items: center;">
+                  <input type="file" id="hero-image-file" accept="image/*" style="display: none;" onchange="uploadFileDirectly(this, 'hero-image', 'hero-image-preview')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('hero-image-file').click()">📤 Upload File</button>
+                  <div id="hero-image-preview-container" style="display: none; align-items: center; gap: 8px;">
+                    <img id="hero-image-preview" src="" style="max-height: 55px; border-radius: 4px; border: 1px solid var(--border-color);">
+                    <span style="font-size: 11px; color: var(--text-light);">Uploaded!</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h2 class="section-heading">Leaders Showcase</h2>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="toggle-switch-label">
+                  <input type="checkbox" id="homepage-show-leaders" name="show_leaders"> Show Leadership Messages Block on Homepage
+                </label>
+              </div>
+            </div>
+
+            <div class="form-submit-row">
+              <button type="submit" class="btn btn-primary">Save Homepage Content</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ==========================================
+             TAB: SCHOOL INFO
+             ========================================== -->
+        <section class="tab-content" id="tab-school-info">
+          <form id="form-school-info" class="edit-form-panel">
+            
+            <h2 class="section-heading">School Meta Details</h2>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="school-name">School Name</label>
+                <input type="text" id="school-name" name="name" required>
+              </div>
+              <div class="form-group col-6">
+                <label for="school-reg-number">School Registration Number (Affiliation Details)</label>
+                <input type="text" id="school-reg-number" name="reg_number">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="school-logo">School Logo Image (Select from library / upload)</label>
+                <div class="input-select-media-wrapper">
+                  <input type="text" id="school-logo" name="logo_url" placeholder="Select emblem URL">
+                  <button type="button" class="btn btn-secondary btn-select-media" data-target-input="school-logo">Choose Media</button>
+                </div>
+                <div style="margin-top: 8px; display: flex; gap: 10px; align-items: center;">
+                  <input type="file" id="school-logo-file" accept="image/*" style="display: none;" onchange="uploadFileDirectly(this, 'school-logo', 'school-logo-preview')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('school-logo-file').click()">📤 Upload Logo</button>
+                  <div id="school-logo-preview-container" style="display: none; align-items: center; gap: 8px;">
+                    <img id="school-logo-preview" src="" style="max-height: 40px; border-radius: 4px; border: 1px solid var(--border-color);">
+                    <span style="font-size: 11px; color: var(--text-light);">Uploaded!</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="school-description">General Description</label>
+                <textarea id="school-description" name="description" rows="3" required></textarea>
+              </div>
+            </div>
+
+            <h2 class="section-heading">About Us Section</h2>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="about-title">About Us Section Title</label>
+                <input type="text" id="about-title" name="about_title" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="about-text">About Us Details (Paragraphs)</label>
+                <textarea id="about-text" name="about_text" rows="5" required></textarea>
+              </div>
+            </div>
+            <h2 class="section-heading">Admission Information Text</h2>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="admission-info-text">Admissions Details / Guidelines Text</label>
+                <textarea id="admission-info-text" name="admission_info" rows="3"></textarea>
+              </div>
+            </div>
+
+            <h2 class="section-heading">Leadership: Director Details</h2>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="director-name">Director Name</label>
+                <input type="text" id="director-name" name="director_name" required>
+              </div>
+              <div class="form-group col-6">
+                <label for="director-phone">Director Contact Number</label>
+                <input type="text" id="director-phone" name="director_phone" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="director-photo">Director Photo (Select from library / enter URL)</label>
+                <div class="input-select-media-wrapper">
+                  <input type="text" id="director-photo" name="director_photo_url">
+                  <button type="button" class="btn btn-secondary btn-select-media" data-target-input="director-photo">Choose Media</button>
+                </div>
+                <div style="margin-top: 8px; display: flex; gap: 10px; align-items: center;">
+                  <input type="file" id="director-photo-file" accept="image/*" style="display: none;" onchange="uploadFileDirectly(this, 'director-photo', 'director-photo-preview')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('director-photo-file').click()">📤 Upload Photo</button>
+                  <div id="director-photo-preview-container" style="display: none; align-items: center; gap: 8px;">
+                    <img id="director-photo-preview" src="" style="max-height: 45px; border-radius: 50%; border: 1px solid var(--border-color);">
+                    <span style="font-size: 11px; color: var(--text-light);">Uploaded!</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="director-message">Director Message / Welcome Address</label>
+                <textarea id="director-message" name="director_message" rows="4" required></textarea>
+              </div>
+            </div>
+
+            <h2 class="section-heading">Leadership: Principal Details</h2>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="principal-name">Principal Name</label>
+                <input type="text" id="principal-name" name="principal_name" required>
+              </div>
+              <div class="form-group col-6">
+                <label for="principal-phone">Principal Contact Number</label>
+                <input type="text" id="principal-phone" name="principal_phone" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="principal-photo">Principal Photo (Select from library / enter URL)</label>
+                <div class="input-select-media-wrapper">
+                  <input type="text" id="principal-photo" name="principal_photo_url">
+                  <button type="button" class="btn btn-secondary btn-select-media" data-target-input="principal-photo">Choose Media</button>
+                </div>
+                <div style="margin-top: 8px; display: flex; gap: 10px; align-items: center;">
+                  <input type="file" id="principal-photo-file" accept="image/*" style="display: none;" onchange="uploadFileDirectly(this, 'principal-photo', 'principal-photo-preview')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('principal-photo-file').click()">📤 Upload Photo</button>
+                  <div id="principal-photo-preview-container" style="display: none; align-items: center; gap: 8px;">
+                    <img id="principal-photo-preview" src="" style="max-height: 45px; border-radius: 50%; border: 1px solid var(--border-color);">
+                    <span style="font-size: 11px; color: var(--text-light);">Uploaded!</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="principal-message">Principal Message / Welcome Address</label>
+                <textarea id="principal-message" name="principal_message" rows="4" required></textarea>
+              </div>
+            </div>
+
+            <div class="form-submit-row">
+              <button type="submit" class="btn btn-primary">Save School & Leadership Settings</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ==========================================
+             TAB: FACULTY & STAFF MANAGEMENT
+             ========================================== -->
+        <section class="tab-content" id="tab-faculty">
+          <div class="section-toolbar">
+            <div class="toolbar-left">
+              <button type="button" class="btn btn-primary" id="btn-add-faculty" onclick="openAddFacultyModal()">
+                ➕ Add Staff Profile
+              </button>
+              <input type="text" id="search-faculty" class="search-input" placeholder="Search by name, subject, or role..." oninput="filterFacultyTable()">
+            </div>
+            <div class="toolbar-right">
+              <select id="filter-faculty-category" class="filter-select" onchange="filterFacultyTable()">
+                <option value="all">All Categories</option>
+                <option value="leadership">School Leadership</option>
+                <option value="teaching">Teaching Faculty</option>
+                <option value="admin">Administrative Staff</option>
+                <option value="support">Support Staff</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="info-alert" style="background:#f0f7ff; border-left:4px solid #0d233a; padding:14px 18px; border-radius:8px; margin-bottom:20px; font-size:13.5px; line-height:1.55; color:#1e293b;">
+            <strong>ℹ️ Live Faculty Sync:</strong> Changes made here immediately reflect on the public website under <strong>“Our Faculty & Staff”</strong>. You can edit designations, qualifications, teaching experience, bios, photos, and order. Placeholder profiles can easily be replaced with real staff members as new hires join.
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">Order</th>
+                  <th style="width: 70px;">Photo</th>
+                  <th>Name & Designation</th>
+                  <th>Category</th>
+                  <th>Subject / Department</th>
+                  <th>Qualification & Exp.</th>
+                  <th style="width: 90px; text-align: center;">Status</th>
+                  <th style="width: 170px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-faculty-table-body">
+                <tr>
+                  <td colspan="8" class="table-empty">Loading faculty profiles...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             TAB: GALLERY MANAGEMENT
+             ========================================== -->
+        <section class="tab-content" id="tab-gallery">
+          <div class="section-toolbar">
+            <div class="toolbar-left">
+              <button class="btn btn-primary" onclick="openAddGalleryModal()">➕ Add Gallery Item</button>
+              <button class="btn btn-secondary" onclick="openCategoryManagerModal()">⚙️ Categories</button>
+            </div>
+            <div class="toolbar-right" style="display: flex; gap: 10px; align-items: center;">
+              <input type="text" id="search-gallery" class="search-input" placeholder="Search gallery...">
+              <select id="filter-gallery-category" class="filter-select">
+                <option value="all">All Categories</option>
+                <option value="classroom">Classroom</option>
+                <option value="hostel">Hostel</option>
+                <option value="events">Events</option>
+                <option value="videos">Videos</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="gallery-management-grid" id="admin-gallery-grid">
+            <p class="empty-list-text">Loading gallery items...</p>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             TAB: NOTICES
+             ========================================== -->
+        <section class="tab-content" id="tab-notices">
+          <div class="section-toolbar">
+            <div class="toolbar-left">
+              <button class="btn btn-primary" onclick="openAddNoticeModal()">➕ Add New Notice</button>
+            </div>
+            <div class="toolbar-right">
+              <input type="text" id="search-notices" class="search-input" placeholder="Search notices...">
+              <select id="filter-notices-category" class="filter-select">
+                <option value="all">All Categories</option>
+                <option value="admission">Admissions</option>
+                <option value="events">Events</option>
+                <option value="general">General</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th style="width: 80px;">Status</th>
+                  <th>Notice Info</th>
+                  <th style="width: 120px;">Category</th>
+                  <th style="width: 120px;">Date</th>
+                  <th style="width: 120px;">Importance</th>
+                  <th style="width: 150px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-notices-table-body">
+                <tr>
+                  <td colspan="6" class="table-empty">Loading notices...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             TAB: EVENTS
+             ========================================== -->
+        <section class="tab-content" id="tab-events">
+          <div class="section-toolbar">
+            <div class="toolbar-left">
+              <button class="btn btn-primary" onclick="openAddEventModal()">➕ Add New Event</button>
+            </div>
+            <div class="toolbar-right">
+              <input type="text" id="search-events" class="search-input" placeholder="Search events...">
+            </div>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th style="width: 80px;">Status</th>
+                  <th style="width: 120px;">Image</th>
+                  <th>Event Details</th>
+                  <th style="width: 150px;">Date / Time</th>
+                  <th>Location</th>
+                  <th style="width: 150px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-events-table-body">
+                <tr>
+                  <td colspan="6" class="table-empty">Loading events...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             TAB: HOSTEL & FACILITIES
+             ========================================== -->
+        <section class="tab-content" id="tab-hostel-facilities">
+          <div class="edit-form-panel">
+            
+            <h2 class="section-heading">Facility Pillars (Homepage Why Choose Us)</h2>
+            <div class="admin-table-container">
+              <table class="admin-data-table" id="admin-facilities-table">
+                <thead>
+                  <tr>
+                    <th style="width: 100px;">Icon ID</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th style="width: 120px; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-facilities-table-body">
+                  <tr>
+                    <td colspan="4" class="table-empty">Loading facilities...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+              <button class="btn btn-primary btn-sm" onclick="openAddFacilityModal()">➕ Add Facility Pillar</button>
+            </div>
+
+            <form id="form-hostel-settings">
+              <h2 class="section-heading">Hostel Description & Details</h2>
+              <div class="form-row">
+                <div class="form-group col-12">
+                  <label for="hostel-description">Hostel Overview Message</label>
+                  <textarea id="hostel-description" name="description" rows="3" required></textarea>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-6">
+                  <label for="hostel-boys">Boys Hostel Information</label>
+                  <input type="text" id="hostel-boys" name="boys_hostel" required>
+                </div>
+                <div class="form-group col-6">
+                  <label for="hostel-girls">Girls Hostel Information</label>
+                  <input type="text" id="hostel-girls" name="girls_hostel" required>
+                </div>
+              </div>
+
+              <h2 class="section-heading">Hostel Key Facilities List (Bullets)</h2>
+              <div class="form-row">
+                <div class="form-group col-12">
+                  <label>Hostel Highlights (Separate each point on a new line)</label>
+                  <textarea id="hostel-bullets" name="bullets" rows="5" placeholder="Separate each point on a new line" required></textarea>
+                </div>
+              </div>
+              <h2 class="section-heading">Hostel Media</h2>
+              <div class="form-row">
+                <div class="form-group col-12">
+                  <label for="hostel-image">Hostel Banner Image (Select from library / upload)</label>
+                  <div class="input-select-media-wrapper">
+                    <input type="text" id="hostel-image" name="hostel_image_url" placeholder="Select hostel image URL">
+                    <button type="button" class="btn btn-secondary btn-select-media" data-target-input="hostel-image">Choose Media</button>
+                  </div>
+                  <div style="margin-top: 8px; display: flex; gap: 10px; align-items: center;">
+                    <input type="file" id="hostel-image-file" accept="image/*" style="display: none;" onchange="uploadFileDirectly(this, 'hostel-image', 'hostel-image-preview')">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('hostel-image-file').click()">📤 Upload File</button>
+                    <div id="hostel-image-preview-container" style="display: none; align-items: center; gap: 8px;">
+                      <img id="hostel-image-preview" src="" style="max-height: 55px; border-radius: 4px; border: 1px solid var(--border-color);">
+                      <span style="font-size: 11px; color: var(--text-light);">Uploaded!</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-submit-row">
+                <button type="submit" class="btn btn-primary">Save Hostel Settings</button>
+              </div>
+            </form>
+
+          </div>
+        </section>
+
+        <!-- ==========================================
+             TAB: ADMISSION ENQUIRIES
+             ========================================== -->
+        <section class="tab-content" id="tab-enquiries">
+          <div class="section-toolbar">
+            <div class="toolbar-left">
+              <input type="text" id="search-enquiries" class="search-input" placeholder="Search parent/student...">
+            </div>
+            <div class="toolbar-right">
+              <select id="filter-enquiries-class" class="filter-select">
+                <option value="all">All Classes</option>
+                <option value="nursery">Nursery</option>
+                <option value="lkg">LKG</option>
+                <option value="ukg">UKG</option>
+                <option value="class-1">Class 1</option>
+                <option value="class-2">Class 2</option>
+                <option value="class-3">Class 3</option>
+                <option value="class-4">Class 4</option>
+                <option value="class-5">Class 5</option>
+                <option value="class-6">Class 6</option>
+                <option value="class-7">Class 7</option>
+                <option value="class-8">Class 8</option>
+              </select>
+              <select id="filter-enquiries-status" class="filter-select">
+                <option value="all">All Statuses</option>
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="follow-up">Follow-up</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th style="width: 100px;">Status</th>
+                  <th>Student / Parent Name</th>
+                  <th>Phone / Info</th>
+                  <th style="width: 100px;">Class</th>
+                  <th>Date Submitted</th>
+                  <th style="width: 180px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-enquiries-table-body">
+                <tr>
+                  <td colspan="6" class="table-empty">Loading enquiries...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             TAB: CONTACT MESSAGES
+             ========================================== -->
+        <section class="tab-content" id="tab-messages">
+          <div class="section-toolbar">
+            <div class="toolbar-left">
+              <input type="text" id="search-messages" class="search-input" placeholder="Search sender/subject...">
+            </div>
+            <div class="toolbar-right">
+              <select id="filter-messages-state" class="filter-select">
+                <option value="all">All Messages</option>
+                <option value="unread">Unread</option>
+                <option value="read">Read</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th style="width: 80px;">Status</th>
+                  <th>Sender Info</th>
+                  <th>Subject & Snippet</th>
+                  <th style="width: 160px;">Date Received</th>
+                  <th style="width: 150px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-messages-table-body">
+                <tr>
+                  <td colspan="5" class="table-empty">Loading messages...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             TAB: MEDIA LIBRARY
+             ========================================== -->
+        <section class="tab-content" id="tab-media-library">
+          <div class="section-toolbar">
+            <div class="toolbar-left">
+              <label for="media-upload-input" class="btn btn-primary" style="cursor: pointer; display: inline-block;">
+                📤 Upload New File
+              </label>
+              <!-- Hidden input file -->
+              <input type="file" id="media-upload-input" accept="image/*,video/*" multiple style="display: none;" onchange="handleMediaUpload(this)">
+            </div>
+            <div class="toolbar-right">
+              <input type="text" id="search-media" class="search-input" placeholder="Search media files...">
+            </div>
+          </div>
+
+          <div class="media-library-grid" id="admin-media-library-grid">
+            <p class="empty-list-text">Loading media assets...</p>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             TAB: SOCIAL & CONTACT SETTINGS
+             ========================================== -->
+        <section class="tab-content" id="tab-social-settings">
+          <form id="form-social-settings" class="edit-form-panel">
+            
+            <h2 class="section-heading">Social Media Links</h2>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="social-instagram">Instagram URL</label>
+                <input type="url" id="social-instagram" name="instagram" placeholder="https://instagram.com/...">
+              </div>
+              <div class="form-group col-6">
+                <label for="social-facebook">Facebook URL</label>
+                <input type="url" id="social-facebook" name="facebook" placeholder="https://facebook.com/...">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="social-youtube">YouTube Channel URL</label>
+                <input type="url" id="social-youtube" name="youtube" placeholder="https://youtube.com/...">
+              </div>
+              <div class="form-group col-6">
+                <label for="social-whatsapp">WhatsApp Contact Number (No spaces/special chars, eg: 9905430742)</label>
+                <input type="text" id="social-whatsapp" name="whatsapp" placeholder="Eg: 9905430742">
+              </div>
+            </div>
+
+            <h2 class="section-heading">Google Maps & Contact Page Settings</h2>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="contact-address">School Contact Address</label>
+                <input type="text" id="contact-address" name="address" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="contact-phone">Contact Phone Number</label>
+                <input type="text" id="contact-phone" name="phone" required>
+              </div>
+              <div class="form-group col-6">
+                <label for="contact-email">Contact Email Address</label>
+                <input type="email" id="contact-email" name="email" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label for="contact-map">Google Maps Embed Link (Src URL only from iframe embed)</label>
+                <textarea id="contact-map" name="google_maps_embed" rows="3" required></textarea>
+              </div>
+            </div>
+
+            <div class="form-submit-row">
+              <button type="submit" class="btn btn-primary">Save Social & Contact Info</button>
+            </div>
+          </form>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==========================================
+       MODALS SECTION
+       ========================================== -->
+  <div class="admin-modal" id="admin-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Modal Title</h3>
+        <button class="modal-close" onclick="closeAdminModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Render form fields dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Media Library Selection Modal (Overlay to select files inside other forms) -->
+  <div class="admin-modal" id="media-select-modal" style="display: none; z-index: 1100;">
+    <div class="modal-card" style="max-width: 900px; width: 90%;">
+      <div class="modal-header">
+        <h3>Choose Media Asset</h3>
+        <button class="modal-close" onclick="closeMediaSelectModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="section-toolbar">
+          <input type="text" id="search-media-select" class="search-input" placeholder="Search files..." style="width: 100%;">
+        </div>
+        <div class="media-library-grid select-mode" id="modal-media-grid" style="max-height: 450px; overflow-y: auto;">
+          <!-- Populated in JS -->
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 15px; text-align: right; border-top: 1px solid var(--border-color);">
+        <button class="btn btn-secondary" onclick="closeMediaSelectModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="admin.js" type="module"></script>
+</body>
+</html>
