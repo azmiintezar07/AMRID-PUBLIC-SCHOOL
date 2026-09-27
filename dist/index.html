@@ -28,10 +28,22 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
 
+  <!-- Theme Persistence Detection (Prevents FOUC) -->
+  <script>
+    (function () {
+      try {
+        const savedTheme = localStorage.getItem('aps_theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = savedTheme ? savedTheme : (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) { }
+    })();
+  </script>
+
   <!-- Styling -->
-  <script type="module" crossorigin src="/assets/main-Ds_M7k2A.js"></script>
+  <script type="module" crossorigin src="/assets/main-zUS-xZAV.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="stylesheet" crossorigin href="/assets/main-Bep4LQBi.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-Dq-M_Un0.css">
 </head>
 
 <body>
@@ -86,6 +98,23 @@
       </nav>
 
       <div class="nav-actions">
+        <!-- Theme Toggle Button (Light/Dark Mode) -->
+        <button class="theme-toggle-btn" id="header-theme-toggle" aria-label="Toggle between light and dark mode" title="Toggle Light/Dark Theme">
+          <svg class="theme-icon moon-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg class="theme-icon sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
         <a href="#admission" class="btn btn-gold btn-nav" id="nav-enquiry-btn">Apply Now</a>
         <!-- Hamburger Menu Button (Mobile) -->
         <button class="hamburger-menu" id="hamburger-toggle" aria-expanded="false" aria-controls="mobile-drawer"
@@ -105,6 +134,25 @@
         <span class="school-title">AMRID PUBLIC SCHOOL</span>
       </div>
       <button class="drawer-close" id="drawer-close" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="drawer-theme-wrapper">
+      <span>Theme Mode</span>
+      <button class="theme-toggle-btn" id="drawer-theme-toggle" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+        <svg class="theme-icon moon-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <svg class="theme-icon sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </button>
     </div>
     <nav class="drawer-nav">
       <ul class="drawer-list">
@@ -142,10 +190,10 @@
 
         <!-- Informative Feature Badges / Pills -->
         <div class="hero-highlights-strip">
-          <!-- <div class="hero-chip">
+          <div class="hero-chip">
             <span class="chip-icon">🌟</span>
             <span>Admissions Open 2026–27</span>
-          </div> -->
+          </div>
           <div class="hero-chip">
             <span class="chip-icon">🎓</span>
             <span>Nursery to Class VIII</span>
@@ -168,13 +216,13 @@
           <a href="#admission" class="btn btn-gold" id="hero-btn1">Apply for Admission</a>
           <a href="#about" class="btn btn-white-border" id="hero-btn2">Explore Our School</a>
           <a href="#contact" class="btn btn-blue-solid" id="hero-btn3">Contact Us</a>
-          <a href="tel:8434149789" class="btn btn-white-border link-call-btn">
+          <a href="tel:9905430742" class="btn btn-white-border link-call-btn">
             <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
             </svg>
             Call Us
           </a>
-          <a href="https://wa.me/8434149789" target="_blank" rel="noopener noreferrer"
+          <a href="https://wa.me/9905430742" target="_blank" rel="noopener noreferrer"
             class="btn btn-whatsapp-solid link-whatsapp-btn">
             <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
               <path
@@ -287,62 +335,38 @@
           </div>
 
           <div class="about-pillars-column">
-            <h3 class="highlights-grid-title">Key Pillars of AMRID Education</h3>
+            <h3 class="highlights-grid-title">Core Educational Pillars</h3>
             <div class="about-pillars-grid">
               
               <div class="about-pillar-card">
-                <div class="pillar-icon">🏛️</div>
-                <div class="pillar-text">
-                  <strong>Established in 2020</strong>
-                  <p>Serving quality, value-based private school education in Baisi, Purnia with continuous growth.</p>
-                </div>
-              </div>
-
-              <div class="about-pillar-card">
                 <div class="pillar-icon">🎓</div>
                 <div class="pillar-text">
-                  <strong>Nursery to Class VIII</strong>
-                  <p>Systematic foundation and middle-school curriculum promoting holistic cognitive development.</p>
+                  <strong>Foundation to Middle School (Nursery – Class VIII)</strong>
+                  <p>Systematic CBSE-standard curriculum cultivating curiosity, foundational numeracy, and analytical reasoning.</p>
                 </div>
               </div>
 
               <div class="about-pillar-card">
                 <div class="pillar-icon">🌐</div>
                 <div class="pillar-text">
-                  <strong>English, Hindi & Urdu Education</strong>
-                  <p>Trilingual mastery ensuring students excel academically and communicate with confidence.</p>
+                  <strong>Trilingual Pedagogy (English, Hindi & Urdu)</strong>
+                  <p>Comprehensive language development empowering children to read, articulate, and express themselves confidently.</p>
                 </div>
               </div>
 
               <div class="about-pillar-card">
                 <div class="pillar-icon">📖</div>
                 <div class="pillar-text">
-                  <strong>Islamic Education</strong>
-                  <p>Moral grounding, Islamic basic studies, and daily ethical discipline alongside standard academics.</p>
+                  <strong>Moral Values & Islamic Studies</strong>
+                  <p>Foundational Islamic teachings, Tajweed basics, character refinement, and ethical grounding alongside modern sciences.</p>
                 </div>
               </div>
 
               <div class="about-pillar-card">
-                <div class="pillar-icon">🏢</div>
+                <div class="pillar-icon">🌱</div>
                 <div class="pillar-text">
-                  <strong>Separate Boys' & Girls' Hostels</strong>
-                  <p>Private, highly secure residential accommodations with dedicated wardens and study hours.</p>
-                </div>
-              </div>
-
-              <div class="about-pillar-card">
-                <div class="pillar-icon">🛡️</div>
-                <div class="pillar-text">
-                  <strong>24/7 CCTV Security</strong>
-                  <p>Widespread camera surveillance and secure campus perimeter ensuring student safety day and night.</p>
-                </div>
-              </div>
-
-              <div class="about-pillar-card">
-                <div class="pillar-icon">🍲</div>
-                <div class="pillar-text">
-                  <strong>3-Time Meal Facility</strong>
-                  <p>Nutritious, freshly cooked breakfast, lunch, and dinner prepared in hygienic school kitchens.</p>
+                  <strong>Holistic Mentorship & Character Building</strong>
+                  <p>Personalized student care, co-curricular arts, disciplined daily routines, and active parent-educator partnership.</p>
                 </div>
               </div>
 
@@ -803,11 +827,11 @@
                 <h3 class="leader-name">Md Danish Raza</h3>
                 <span class="leader-designation">Director, AMRID Public School</span>
                 <div class="leader-contact-row">
-                  <a href="tel:8434149789" class="leader-contact-link link-call-btn">
+                  <a href="tel:9905430743" class="leader-contact-link link-call-btn">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                     </svg>
-                    +91 8434149789
+                    +91 9905430743
                   </a>
                   <a href="https://wa.me/9905430742" target="_blank" rel="noopener noreferrer" class="leader-contact-link whatsapp">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
@@ -974,10 +998,17 @@
       <div class="container">
         <div class="text-center-wrapper">
           <span class="section-tag">School Calendar</span>
-          <h2 class="section-title">Upcoming Events & Assemblies</h2>
-          <p class="section-subtitle">Stay updated with our scheduled events, holidays, parent-teacher meets, and
-            student assemblies.</p>
+          <h2 class="section-title">Events & Assemblies</h2>
+          <p class="section-subtitle">Stay updated with our scheduled school events, holidays, parent-teacher meets, and student assemblies.</p>
         </div>
+
+        <!-- Filter tabs for Upcoming Events vs Past Events -->
+        <div class="events-filter-nav" role="tablist" aria-label="Events Category Filter">
+          <button class="event-tab active" id="events-filter-upcoming" data-event-type="upcoming" role="tab" aria-selected="true">Upcoming Events</button>
+          <button class="event-tab" id="events-filter-past" data-event-type="past" role="tab" aria-selected="false">Past Events Archive</button>
+          <button class="event-tab" id="events-filter-all" data-event-type="all" role="tab" aria-selected="false">All Events</button>
+        </div>
+
         <div class="events-grid" id="events-grid-container">
           <!-- Populated dynamically from backend -->
         </div>
@@ -1175,7 +1206,7 @@
 
             <div class="admissions-banner-actions">
               <a href="#enquiry-form" class="btn btn-gold btn-lg">Apply for Admission</a>
-              <a href="https://wa.me/8434149789" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp-solid btn-lg">Enquire on WhatsApp</a>
+              <a href="https://wa.me/9905430742" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp-solid btn-lg">Enquire on WhatsApp</a>
               <a href="#contact" class="btn btn-white-border btn-lg">Contact Admissions Desk</a>
             </div>
           </div>
@@ -1258,39 +1289,46 @@
               </div>
 
               <div class="form-row">
-                <div class="form-group">
+                <div class="form-group" style="flex: 1;">
                   <label for="phone-number">Phone Number <span class="required">*</span></label>
-                  <input type="tel" id="phone-number" name="phoneNumber" placeholder="10-digit mobile number" required>
+                  <input type="tel" id="phone-number" name="phoneNumber" placeholder="10-digit mobile number" required pattern="[0-9]{10}">
                   <span class="error-msg" id="phone-number-error">Enter a valid 10-digit phone number</span>
                 </div>
 
-                <div class="form-group">
-                  <label for="class-apply">Class Applying For <span class="required">*</span></label>
-                  <select id="class-apply" name="classApply" required>
-                    <option value="" disabled selected>Select Class</option>
-                    <option value="nursery">Nursery</option>
-                    <option value="lkg">LKG</option>
-                    <option value="ukg">UKG</option>
-                    <option value="class-1">Class 1</option>
-                    <option value="class-2">Class 2</option>
-                    <option value="class-3">Class 3</option>
-                    <option value="class-4">Class 4</option>
-                    <option value="class-5">Class 5</option>
-                    <option value="class-6">Class 6</option>
-                    <option value="class-7">Class 7</option>
-                    <option value="class-8">Class 8</option>
-                  </select>
-                  <span class="error-msg" id="class-apply-error">Please select a class</span>
+                <div class="form-group" style="flex: 1;">
+                  <label for="enquiry-email">Email Address <span style="font-size: 11px; color: var(--text-light);">(Optional)</span></label>
+                  <input type="email" id="enquiry-email" name="email" placeholder="example@gmail.com">
                 </div>
               </div>
 
               <div class="form-group">
-                <label for="message">Message</label>
+                <label for="class-apply">Class Applying For <span class="required">*</span></label>
+                <select id="class-apply" name="classApply" required>
+                  <option value="" disabled selected>Select Class</option>
+                  <option value="nursery">Nursery</option>
+                  <option value="lkg">LKG</option>
+                  <option value="ukg">UKG</option>
+                  <option value="class-1">Class 1</option>
+                  <option value="class-2">Class 2</option>
+                  <option value="class-3">Class 3</option>
+                  <option value="class-4">Class 4</option>
+                  <option value="class-5">Class 5</option>
+                  <option value="class-6">Class 6</option>
+                  <option value="class-7">Class 7</option>
+                  <option value="class-8">Class 8</option>
+                </select>
+                <span class="error-msg" id="class-apply-error">Please select a class</span>
+              </div>
+
+              <div class="form-group">
+                <label for="message">Message / Queries</label>
                 <textarea id="message" name="message" rows="3"
                   placeholder="Any specific requirements or hostel seats related queries..."></textarea>
               </div>
 
-              <button type="submit" class="btn btn-blue-solid btn-full">Submit Admission Enquiry</button>
+              <button type="submit" class="btn btn-blue-solid btn-full" id="enquiry-submit-btn">
+                <span>Submit Admission Enquiry</span>
+              </button>
             </form>
 
             <!-- Success/Feedback Alerts -->
@@ -1400,7 +1438,7 @@
             </button>
             <div class="faq-content">
               <p>Parents can easily fill out the Online Admission Enquiry form on this website, call our Director
-                directly at +91 8434149789, or send a message on WhatsApp.</p>
+                directly at +91 9905430742, or send a message on WhatsApp.</p>
             </div>
           </div>
 
@@ -1480,7 +1518,7 @@
                 </div>
                 <h3>Director Office</h3>
                 <p class="contact-name" id="contact-director-name">Md Danish Raza</p>
-                <p class="contact-phone-val" id="contact-director-phone">+91 8434149789</p>
+                <p class="contact-phone-val" id="contact-director-phone">+91 9905430742</p>
                 <div class="contact-action-btn-row">
                   <a href="tel:9905430742" class="btn btn-blue-solid flex-btn link-call-btn">Call Director</a>
                   <a href="https://wa.me/9905430742" target="_blank" rel="noopener noreferrer"
@@ -1530,13 +1568,10 @@
             </div>
           </div>
           <div class="contact-form-side">
-            <div class="admission-form-wrapper"
-              style="box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); padding: 32px; border-radius: var(--radius-md); background-color: var(--white); margin: 0;">
-              <h3 class="form-title"
-                style="font-family: var(--font-heading); font-size: 20px; font-weight: 700; color: var(--primary-navy); margin-bottom: 6px;">
-                Send a Direct Message</h3>
-              <p class="form-subtitle" style="font-size: 13px; color: var(--text-light); margin-bottom: 24px;">For
-                general questions, admissions status or comments, drop us a line below.</p>
+            <div class="admission-form-wrapper contact-form-wrapper"
+              style="box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); padding: 32px; border-radius: var(--radius-md); margin: 0;">
+              <h3 class="form-title" style="margin-bottom: 6px;">Send a Direct Message</h3>
+              <p class="form-subtitle" style="margin-bottom: 24px;">For general questions, admissions status or comments, drop us a line below.</p>
 
               <form id="contact-form" class="admission-form" novalidate>
                 <div class="form-group">
@@ -1674,11 +1709,15 @@
         <h4 class="footer-col-title">Admissions & Care</h4>
         <p class="footer-contact-item">
           <strong>Director: Md Danish Raza</strong><br>
-          <a href="tel:9905430742">+91 8434149789</a>
+          <a href="tel:9905430742">+91 9905430742</a>
         </p>
         <p class="footer-contact-item">
           <strong>Principal: Md Noorain Raza</strong><br>
           <a href="tel:9693264161">+91 9693264161</a>
+        </p>
+        <p class="footer-contact-item" style="margin-top: 10px; font-size: 13px; color: rgba(255,255,255,0.7);">
+          <strong>School Timings:</strong><br>
+          <span id="footer-timings-val">Mon – Sat: 7:30 AM – 1:30 PM<br>Office: 8:00 AM – 4:00 PM</span>
         </p>
       </div>
 

@@ -13,9 +13,16 @@
   --white: #ffffff;
   --bg-light: #f8f9fa;
   --bg-dark: #091a2b;
+  --card-surface: #ffffff;
+  --text-heading: #0d233a;
+  --text-primary: #0d233a;
   --text-dark: #1e293b;
+  --text-medium: #475569;
   --text-light: #64748b;
+  --text-muted: #94a3b8;
+  --text-placeholder: #94a3b8;
   --text-white: #ffffff;
+  --text-on-gold: #0d233a;
   --border-color: #e2e8f0;
   
   --whatsapp-green: #25d366;
@@ -39,6 +46,34 @@
   --radius-full: 9999px;
   
   --header-height: 80px;
+}
+
+/* 1.1 COMPLETE DARK MODE SYSTEM */
+[data-theme="dark"] {
+  --primary-navy: #071320;
+  --secondary-blue: #0e2238;
+  --accent-gold: #e2ba6d;
+  --accent-gold-hover: #f3ce82;
+  --accent-gold-light: rgba(226, 186, 109, 0.15);
+  --white: #101e30;
+  --bg-light: #091422;
+  --bg-dark: #040912;
+  --card-surface: #101e30;
+  --text-heading: #ffffff;
+  --text-primary: #f8fafc;
+  --text-dark: #f8fafc;
+  --text-medium: #cbd5e1;
+  --text-light: #94a3b8;
+  --text-muted: #64748b;
+  --text-placeholder: #94a3b8;
+  --text-white: #ffffff;
+  --text-on-gold: #071320;
+  --border-color: #1e3552;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.7);
+  --shadow-gold: 0 8px 20px rgba(226, 186, 109, 0.2);
 }
 
 /* 2. BASE & RESET STYLES */
@@ -3452,3 +3487,588 @@ select.invalid:focus {
     gap: 30px;
   }
 }
+
+/* ==========================================================================
+   THEME TOGGLE BUTTON & DYNAMIC TRANSITIONS
+   ========================================================================== */
+body, header, .site-header, .facility-card, .leader-card, .event-card, 
+.notice-item, .gallery-item-card, .admission-info-card, .admission-form-wrapper, 
+.faq-item, .contact-info-card, .site-footer, .mobile-drawer, .why-card, .highlight-card {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(197, 160, 89, 0.12);
+  border: 1px solid rgba(197, 160, 89, 0.35);
+  color: var(--accent-gold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--accent-gold);
+  color: #071320;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(197, 160, 89, 0.35);
+}
+
+.theme-toggle-btn:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+.theme-icon {
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+}
+
+/* Light mode icon visibility */
+[data-theme="light"] .sun-icon {
+  display: none !important;
+}
+[data-theme="light"] .moon-icon {
+  display: block !important;
+}
+
+/* Dark mode icon visibility */
+[data-theme="dark"] .sun-icon {
+  display: block !important;
+  color: #ffd166;
+}
+[data-theme="dark"] .moon-icon {
+  display: none !important;
+}
+
+/* In mobile drawer */
+.drawer-theme-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin: 12px 0 16px;
+  background: rgba(197, 160, 89, 0.08);
+  border: 1px solid rgba(197, 160, 89, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--text-dark);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   DARK MODE COMPONENT OVERRIDES & HIGH CONTRAST SUITE
+   ========================================================================== */
+[data-theme="dark"] body {
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+/* 1. Header, Navigation & Brand */
+[data-theme="dark"] .site-header {
+  background-color: rgba(7, 19, 32, 0.95);
+  border-bottom: 1px solid rgba(226, 186, 109, 0.18);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .school-title,
+[data-theme="dark"] .site-header .school-title {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .school-subtitle,
+[data-theme="dark"] .site-header .school-subtitle {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .site-header .nav-link {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .site-header .nav-link:hover,
+[data-theme="dark"] .site-header .nav-link.active {
+  color: var(--accent-gold) !important;
+}
+
+[data-theme="dark"] .hamburger-bar {
+  background-color: #ffffff !important;
+}
+
+[data-theme="dark"] .mobile-drawer {
+  background-color: #071320;
+  border-right: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .drawer-header {
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .drawer-logo .school-title {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .drawer-close {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .drawer-close:hover {
+  color: var(--accent-gold) !important;
+}
+
+[data-theme="dark"] .drawer-link {
+  color: #f8fafc !important;
+  border-bottom: 1px solid rgba(30, 53, 82, 0.5);
+}
+
+[data-theme="dark"] .drawer-link:hover {
+  color: var(--accent-gold) !important;
+}
+
+[data-theme="dark"] .drawer-theme-wrapper {
+  color: #f8fafc !important;
+}
+
+/* 2. Sections Backgrounds & Surfaces */
+[data-theme="dark"] .highlights-section,
+[data-theme="dark"] .why-choose-section,
+[data-theme="dark"] .facilities-section,
+[data-theme="dark"] .faculty-section,
+[data-theme="dark"] .events-section,
+[data-theme="dark"] .admission-section,
+[data-theme="dark"] .location-section {
+  background-color: var(--bg-light) !important;
+}
+
+[data-theme="dark"] .about-section,
+[data-theme="dark"] .academics-section,
+[data-theme="dark"] .leadership-section,
+[data-theme="dark"] .gallery-section,
+[data-theme="dark"] .faq-section,
+[data-theme="dark"] .contact-section {
+  background-color: var(--bg-dark) !important;
+}
+
+[data-theme="dark"] .highlight-card,
+[data-theme="dark"] .why-card,
+[data-theme="dark"] .facility-card,
+[data-theme="dark"] .leader-card,
+[data-theme="dark"] .message-card,
+[data-theme="dark"] .faculty-card,
+[data-theme="dark"] .staff-card,
+[data-theme="dark"] .event-card,
+[data-theme="dark"] .gallery-item-card,
+[data-theme="dark"] .admission-info-card,
+[data-theme="dark"] .admission-form-wrapper,
+[data-theme="dark"] .contact-form-wrapper,
+[data-theme="dark"] .faq-item,
+[data-theme="dark"] .location-info-panel,
+[data-theme="dark"] .contact-info-card,
+[data-theme="dark"] .about-pillar-card,
+[data-theme="dark"] .school-address-box {
+  background-color: var(--card-surface);
+  border-color: var(--border-color);
+  color: var(--text-dark);
+}
+
+/* 3. Section Titles, Headings & Highlights */
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .leader-name,
+[data-theme="dark"] .facility-content h3,
+[data-theme="dark"] .why-title,
+[data-theme="dark"] .highlight-title,
+[data-theme="dark"] .event-card-title,
+[data-theme="dark"] .gallery-item-info h3,
+[data-theme="dark"] .admission-title,
+[data-theme="dark"] .form-title,
+[data-theme="dark"] .contact-info-card h3,
+[data-theme="dark"] .school-address-box h3,
+[data-theme="dark"] .highlights-grid-title,
+[data-theme="dark"] .academic-pillar-item h4,
+[data-theme="dark"] .about-features-list li h4,
+[data-theme="dark"] .point-item h4,
+[data-theme="dark"] .staff-name,
+[data-theme="dark"] .hero-title,
+[data-theme="dark"] .hostel-panel-title,
+[data-theme="dark"] .admissions-banner-headline,
+[data-theme="dark"] .footer-title,
+[data-theme="dark"] .footer-col-title {
+  color: #ffffff !important;
+}
+
+/* 4. Subtitles, Descriptions, Body Text & Notes */
+[data-theme="dark"] .section-subtitle,
+[data-theme="dark"] .about-text,
+[data-theme="dark"] .facility-content p,
+[data-theme="dark"] .why-text,
+[data-theme="dark"] .highlight-text,
+[data-theme="dark"] .event-card-desc,
+[data-theme="dark"] .gallery-item-info p,
+[data-theme="dark"] .admission-text,
+[data-theme="dark"] .form-subtitle,
+[data-theme="dark"] .faq-content p,
+[data-theme="dark"] .leader-quote p,
+[data-theme="dark"] .leader-message-preview,
+[data-theme="dark"] .leader-message-full p,
+[data-theme="dark"] .about-features-list li p,
+[data-theme="dark"] .academic-pillar-item p,
+[data-theme="dark"] .academics-text-panel .section-intro,
+[data-theme="dark"] .point-item p,
+[data-theme="dark"] .school-address-box p,
+[data-theme="dark"] .location-note,
+[data-theme="dark"] .contact-address-text,
+[data-theme="dark"] .meta-item,
+[data-theme="dark"] .footer-address,
+[data-theme="dark"] .footer-contact-item,
+[data-theme="dark"] .footer-links a,
+[data-theme="dark"] .notice-text,
+[data-theme="dark"] .staff-designation,
+[data-theme="dark"] .staff-bio-excerpt {
+  color: #cbd5e1 !important;
+}
+
+/* 5. Elements with permanent white text on dark surfaces */
+[data-theme="dark"] .text-white,
+[data-theme="dark"] .section-title.text-white,
+[data-theme="dark"] .btn-blue-solid,
+[data-theme="dark"] .btn-whatsapp-solid,
+[data-theme="dark"] .btn-white-border,
+[data-theme="dark"] .hero-chip,
+[data-theme="dark"] .banner-pillar-chip,
+[data-theme="dark"] .notice-title,
+[data-theme="dark"] .bullet-item span strong,
+[data-theme="dark"] .footer-contact-item strong,
+[data-theme="dark"] .gallery-item-tag,
+[data-theme="dark"] .social-icon,
+[data-theme="dark"] .floating-whatsapp-widget,
+[data-theme="dark"] .widget-tooltip,
+[data-theme="dark"] .lightbox-close {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn-white-border {
+  border-color: #ffffff !important;
+}
+
+/* 6. Text on Gold / Accent Elements (Must remain dark for AAA contrast) */
+[data-theme="dark"] .btn-gold,
+[data-theme="dark"] .event-date-badge,
+[data-theme="dark"] .badge-gold-light,
+[data-theme="dark"] .notice-filters .filter-btn.active,
+[data-theme="dark"] .theme-toggle-btn:hover {
+  color: #071320 !important;
+}
+
+/* 7. Key Information & Specific Badges */
+[data-theme="dark"] .registration-box {
+  background: rgba(226, 186, 109, 0.08);
+  border-color: rgba(226, 186, 109, 0.25);
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .reg-label,
+[data-theme="dark"] .cta-heading-text,
+[data-theme="dark"] .event-card-meta,
+[data-theme="dark"] #footer-reg-number,
+[data-theme="dark"] .design-by {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .reg-value,
+[data-theme="dark"] .contact-phone-val,
+[data-theme="dark"] .about-pillar-card .pillar-text strong {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .about-pillar-card .pillar-text p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .leader-contact-link {
+  background-color: #071320 !important;
+  color: #f8fafc !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .leader-contact-link:hover {
+  background-color: var(--accent-gold) !important;
+  color: #071320 !important;
+}
+
+[data-theme="dark"] .leader-contact-link.whatsapp {
+  background-color: rgba(37, 211, 102, 0.15) !important;
+  color: #4ade80 !important;
+  border-color: rgba(37, 211, 102, 0.35) !important;
+}
+
+[data-theme="dark"] .leader-contact-link.whatsapp:hover {
+  background-color: #25d366 !important;
+  color: #ffffff !important;
+}
+
+/* 8. Faculty Tabs & Staff Cards */
+[data-theme="dark"] .faculty-tabs {
+  background-color: #071320 !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .faculty-tab {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .faculty-tab:hover {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .faculty-tab.active {
+  background: linear-gradient(135deg, var(--secondary-blue), #0d233a) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .pill-leadership {
+  background-color: rgba(226, 186, 109, 0.15) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(226, 186, 109, 0.35) !important;
+}
+
+[data-theme="dark"] .pill-teaching {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+}
+
+[data-theme="dark"] .pill-admin {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+  color: #c084fc !important;
+  border-color: rgba(168, 85, 247, 0.35) !important;
+}
+
+[data-theme="dark"] .pill-support {
+  background-color: rgba(148, 163, 184, 0.15) !important;
+  color: #94a3b8 !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+}
+
+[data-theme="dark"] .staff-badge {
+  background-color: #071320 !important;
+  border-color: var(--border-color) !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .btn-staff-detail {
+  background-color: #071320 !important;
+  border-color: var(--border-color) !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .btn-staff-detail:hover {
+  background-color: var(--accent-gold) !important;
+  color: #071320 !important;
+}
+
+[data-theme="dark"] .empty-faculty-notice {
+  background-color: var(--card-surface) !important;
+  color: #94a3b8 !important;
+}
+
+/* 9. Staff Detail Modal */
+[data-theme="dark"] .staff-modal-dialog {
+  background-color: #0c1a2c !important;
+  border: 1px solid var(--border-color) !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .staff-modal-close {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .staff-modal-close:hover {
+  color: var(--accent-gold) !important;
+}
+
+[data-theme="dark"] .staff-detail-name {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .staff-detail-designation {
+  color: var(--accent-gold) !important;
+}
+
+[data-theme="dark"] .staff-detail-grid {
+  background: #071320 !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .detail-cell-label {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .detail-cell-value {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .staff-detail-bio-box .bio-heading {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .staff-detail-bio-box .bio-text {
+  color: #cbd5e1 !important;
+}
+
+/* 10. Forms, Inputs, Labels & Placeholders */
+[data-theme="dark"] label {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] label span {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="tel"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: #071320 !important;
+  color: #f8fafc !important;
+  border: 1.5px solid #1e3552 !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: var(--accent-gold) !important;
+  background-color: #09192c !important;
+  box-shadow: 0 0 0 3px rgba(226, 186, 109, 0.2) !important;
+}
+
+[data-theme="dark"] select option {
+  background-color: #0e2034 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .form-feedback.success-state {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: #6ee7b7 !important;
+}
+
+[data-theme="dark"] .form-feedback.error-state {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  color: #fca5a5 !important;
+}
+
+/* 11. FAQ Accordion */
+[data-theme="dark"] .faq-trigger {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .faq-trigger:hover {
+  color: var(--accent-gold) !important;
+}
+
+[data-theme="dark"] .faq-item {
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .faq-item.active,
+[data-theme="dark"] .faq-item.open {
+  border-color: var(--accent-gold) !important;
+}
+
+/* 12. Gallery Tabs & Overlays */
+[data-theme="dark"] .gallery-tab {
+  background-color: var(--card-surface) !important;
+  color: #cbd5e1 !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .gallery-tab:hover {
+  color: var(--accent-gold) !important;
+}
+
+[data-theme="dark"] .gallery-tab.active {
+  background-color: var(--secondary-blue) !important;
+  color: #ffffff !important;
+  border-color: var(--accent-gold) !important;
+}
+
+/* ==========================================================================
+   EVENTS FILTER TABS (UPCOMING & PAST SEPARATION)
+   ========================================================================== */
+.events-filter-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.event-tab {
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  background: var(--card-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-dark);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.event-tab:hover {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+
+.event-tab.active {
+  background: var(--primary-navy);
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  box-shadow: 0 4px 14px rgba(13, 35, 58, 0.15);
+}
+
+[data-theme="dark"] .event-tab.active {
+  background: var(--secondary-blue);
+  color: #ffffff;
+  border-color: var(--accent-gold);
+}
+
+.event-status-tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 8px;
+}
+
+.event-status-upcoming {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.event-status-past {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+

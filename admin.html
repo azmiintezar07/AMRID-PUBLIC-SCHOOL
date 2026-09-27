@@ -18,6 +18,21 @@
       errBox.innerHTML += '<strong>Runtime Error:</strong> ' + e.message + '\nURL: ' + e.filename + '\nLine: ' + e.lineno + ', Col: ' + e.colno + '\n\n';
     });
   </script>
+
+  <!-- Prevent Theme Flash -->
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('aps_theme');
+        const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,23 +50,11 @@
   <div class="login-wrapper" id="login-section">
     <div class="login-card">
       <div class="login-logo">
-        <svg class="school-logo" viewBox="0 0 100 100" width="60" height="60">
-          <defs>
-            <linearGradient id="gold-grad-login" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#d4af37" />
-              <stop offset="100%" stop-color="#aa7c11" />
-            </linearGradient>
-            <linearGradient id="blue-grad-login" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#1b3a57" />
-              <stop offset="100%" stop-color="#0d233a" />
-            </linearGradient>
-          </defs>
-          <path d="M 50 5 L 85 20 V 55 C 85 75, 50 95, 50 95 C 50 95, 15 75, 15 55 V 20 Z" fill="url(#blue-grad-login)" stroke="url(#gold-grad-login)" stroke-width="3"/>
-          <path d="M 30 50 C 35 46, 45 46, 50 50 C 55 46, 65 46, 70 50 V 62 C 65 58, 55 58, 50 62 C 45 58, 35 58, 30 62 Z" fill="none" stroke="url(#gold-grad-login)" stroke-width="2.5"/>
-          <line x1="50" y1="50" x2="50" y2="62" stroke="url(#gold-grad-login)" stroke-width="2.5" />
-          <polygon points="50,22 53,30 61,30 55,35 57,43 50,38 43,43 45,35 39,30 47,30" fill="url(#gold-grad-login)"/>
-          <text x="50" y="78" font-family="'Outfit', sans-serif" font-weight="bold" font-size="12" fill="#ffffff" text-anchor="middle">APS</text>
-        </svg>
+        <img class="admin-login-logo school-logo" 
+             src="/uploads/media-1786798848541-655607772.png" 
+             onerror="this.onerror=null; this.src='/school-badge-favicon.png';" 
+             alt="AMRID PUBLIC SCHOOL Official Logo"
+             loading="eager">
         <h2>AMRID PUBLIC SCHOOL</h2>
         <p>Administration Portal</p>
       </div>
@@ -106,12 +109,13 @@
     <aside class="admin-sidebar" id="admin-sidebar">
       <div class="sidebar-header">
         <div class="logo-area">
-          <svg viewBox="0 0 100 100" width="36" height="36">
-            <path d="M 50 5 L 85 20 V 55 C 85 75, 50 95, 50 95 C 50 95, 15 75, 15 55 V 20 Z" fill="#1b3a57" stroke="#c5a059" stroke-width="3"/>
-            <text x="50" y="65" font-family="'Outfit', sans-serif" font-weight="bold" font-size="16" fill="#c5a059" text-anchor="middle">APS</text>
-          </svg>
+          <img class="admin-sidebar-logo school-logo" 
+               src="/uploads/media-1786798848541-655607772.png" 
+               onerror="this.onerror=null; this.src='/school-badge-favicon.png';" 
+               alt="AMRID PUBLIC SCHOOL Official Logo"
+               loading="eager">
           <div class="logo-details">
-            <span class="logo-title">AMRID SCHOOL</span>
+            <span class="logo-title">AMRID PUBLIC SCHOOL</span>
             <span class="logo-subtitle">Admin Panel</span>
           </div>
         </div>
@@ -209,6 +213,23 @@
           <h1 id="page-title">Dashboard Overview</h1>
         </div>
         <div class="header-right">
+          <button class="theme-toggle-btn admin-theme-toggle" id="admin-theme-toggle" type="button" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
+            <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <span class="theme-label" id="admin-theme-label" style="font-size: 12px; font-weight: 600;">Theme</span>
+          </button>
           <a href="/" target="_blank" class="btn btn-secondary btn-sm link-external-site">👁️ Visit Website</a>
           <button class="btn btn-danger btn-sm" id="btn-logout-header">Log Out</button>
         </div>
@@ -222,54 +243,77 @@
              ========================================== -->
         <section class="tab-content active" id="tab-dashboard">
           
+          <!-- Attention Required Banner -->
+          <div class="admin-alert-banner" id="admin-alert-banner" style="display: none;">
+            <span class="alert-icon">🔔</span>
+            <span class="alert-message" id="admin-alert-text">Attention: You have new pending admission enquiries or unread messages.</span>
+            <button class="btn btn-sm btn-secondary" id="btn-alert-view-enquiries" type="button" style="margin-left: auto;">View Enquiries</button>
+          </div>
+
           <!-- Statistics Cards Grid -->
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-icon" style="background-color: rgba(197, 160, 89, 0.1); color: var(--accent-gold);">🖼️</div>
+              <div class="stat-icon" style="background-color: rgba(33, 150, 243, 0.12); color: #2196f3;">📝</div>
               <div class="stat-info">
-                <h3>Gallery Media</h3>
-                <p class="stat-number" id="stat-gallery-count">0</p>
-                <span class="stat-desc">Photos & Videos</span>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background-color: rgba(33, 150, 243, 0.1); color: #2196f3;">📢</div>
-              <div class="stat-info">
-                <h3>Total Notices</h3>
-                <p class="stat-number" id="stat-notices-count">0</p>
-                <span class="stat-desc">Published announcements</span>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background-color: rgba(76, 175, 80, 0.1); color: #4caf50;">📅</div>
-              <div class="stat-info">
-                <h3>School Events</h3>
-                <p class="stat-number" id="stat-events-count">0</p>
-                <span class="stat-desc">Upcoming school events</span>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background-color: rgba(0, 150, 136, 0.1); color: #009688;">👨‍🏫</div>
-              <div class="stat-info">
-                <h3>Faculty & Staff</h3>
-                <p class="stat-number" id="stat-faculty-count">0</p>
-                <span class="stat-desc" id="stat-faculty-active">0 active profiles</span>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background-color: rgba(156, 39, 176, 0.1); color: #9c27b0;">📝</div>
-              <div class="stat-info">
-                <h3>Admission Enquiries</h3>
+                <h3>Total Enquiries</h3>
                 <p class="stat-number" id="stat-enquiries-count">0</p>
-                <span class="stat-desc" id="stat-enquiries-new">0 new/unread</span>
+                <span class="stat-desc" id="stat-enquiries-desc">All time received</span>
               </div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon" style="background-color: rgba(244, 67, 54, 0.1); color: #f44336;">✉️</div>
+              <div class="stat-icon" style="background-color: rgba(255, 152, 0, 0.12); color: #ff9800;">⚡</div>
+              <div class="stat-info">
+                <h3>New Enquiries</h3>
+                <p class="stat-number" id="stat-new-enquiries-count">0</p>
+                <span class="stat-desc" id="stat-new-enquiries-desc">Needs attention</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(156, 39, 176, 0.12); color: #9c27b0;">⏳</div>
+              <div class="stat-info">
+                <h3>In Follow-up</h3>
+                <p class="stat-number" id="stat-followup-count">0</p>
+                <span class="stat-desc" id="stat-followup-desc">Active pipelines</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(46, 125, 50, 0.12); color: #2e7d32;">🎯</div>
+              <div class="stat-info">
+                <h3>Converted</h3>
+                <p class="stat-number" id="stat-converted-count">0</p>
+                <span class="stat-desc" id="stat-converted-desc">Admitted students</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(100, 116, 139, 0.12); color: #64748b;">📁</div>
+              <div class="stat-info">
+                <h3>Closed Enquiries</h3>
+                <p class="stat-number" id="stat-closed-count">0</p>
+                <span class="stat-desc" id="stat-closed-desc">Archived / resolved</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(239, 68, 68, 0.12); color: #ef4444;">✉️</div>
               <div class="stat-info">
                 <h3>Contact Messages</h3>
                 <p class="stat-number" id="stat-messages-count">0</p>
                 <span class="stat-desc" id="stat-messages-unread">0 unread</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(76, 175, 80, 0.12); color: #4caf50;">📅</div>
+              <div class="stat-info">
+                <h3>School Events</h3>
+                <p class="stat-number" id="stat-events-count">0</p>
+                <span class="stat-desc" id="stat-events-desc">0 upcoming</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: rgba(197, 160, 89, 0.12); color: var(--accent-gold);">📢</div>
+              <div class="stat-info">
+                <h3>Recent Notices</h3>
+                <p class="stat-number" id="stat-notices-count">0</p>
+                <span class="stat-desc" id="stat-notices-desc">Published notices</span>
               </div>
             </div>
           </div>
@@ -305,7 +349,14 @@
             </div>
 
             <div class="details-card recent-updates-card">
-              <h2 class="card-title">Recent Submissions</h2>
+              <h2 class="card-title">Recent Admission Enquiries</h2>
+              <div class="submissions-list" id="dashboard-recent-enquiries">
+                <p class="empty-list-text">Loading recent enquiries...</p>
+              </div>
+            </div>
+
+            <div class="details-card recent-updates-card">
+              <h2 class="card-title">Recent Contact Messages</h2>
               <div class="submissions-list" id="dashboard-recent-submissions">
                 <p class="empty-list-text">Loading recent entries...</p>
               </div>
@@ -423,6 +474,18 @@
               <div class="form-group col-12">
                 <label for="school-description">General Description</label>
                 <textarea id="school-description" name="description" rows="3" required></textarea>
+              </div>
+            </div>
+
+            <h2 class="section-heading">School & Office Timings</h2>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="school-timings">School Academic Timings (e.g. Mon – Sat: 8:00 AM – 2:00 PM)</label>
+                <input type="text" id="school-timings" name="school_timings" placeholder="Mon – Sat: 8:00 AM – 2:00 PM">
+              </div>
+              <div class="form-group col-6">
+                <label for="office-timings">School Office Timings (e.g. Mon – Sat: 8:00 AM – 3:30 PM)</label>
+                <input type="text" id="office-timings" name="office_timings" placeholder="Mon – Sat: 8:00 AM – 3:30 PM">
               </div>
             </div>
 
@@ -545,7 +608,7 @@
             </div>
           </div>
 
-          <div class="info-alert" style="background:#f0f7ff; border-left:4px solid #0d233a; padding:14px 18px; border-radius:8px; margin-bottom:20px; font-size:13.5px; line-height:1.55; color:#1e293b;">
+          <div class="info-alert">
             <strong>ℹ️ Live Faculty Sync:</strong> Changes made here immediately reflect on the public website under <strong>“Our Faculty & Staff”</strong>. You can edit designations, qualifications, teaching experience, bios, photos, and order. Placeholder profiles can easily be replaced with real staff members as new hires join.
           </div>
 
@@ -614,6 +677,12 @@
                 <option value="events">Events</option>
                 <option value="general">General</option>
               </select>
+              <select id="filter-notices-status" class="filter-select">
+                <option value="all">All Statuses</option>
+                <option value="published">Published Only</option>
+                <option value="unpublished">Draft / Unpublished</option>
+                <option value="archived">Archived</option>
+              </select>
             </div>
           </div>
 
@@ -648,6 +717,11 @@
             </div>
             <div class="toolbar-right">
               <input type="text" id="search-events" class="search-input" placeholder="Search events...">
+              <select id="filter-events-status" class="filter-select">
+                <option value="all">All Events</option>
+                <option value="upcoming">Upcoming Events</option>
+                <option value="past">Past Events</option>
+              </select>
             </div>
           </div>
 
@@ -759,9 +833,15 @@
         <section class="tab-content" id="tab-enquiries">
           <div class="section-toolbar">
             <div class="toolbar-left">
-              <input type="text" id="search-enquiries" class="search-input" placeholder="Search parent/student...">
+              <input type="text" id="search-enquiries" class="search-input" placeholder="Search student, parent, phone, email...">
             </div>
             <div class="toolbar-right">
+              <select id="filter-enquiries-date" class="filter-select">
+                <option value="all">All Dates</option>
+                <option value="today">Today</option>
+                <option value="7days">Past 7 Days</option>
+                <option value="30days">Past 30 Days</option>
+              </select>
               <select id="filter-enquiries-class" class="filter-select">
                 <option value="all">All Classes</option>
                 <option value="nursery">Nursery</option>
@@ -778,10 +858,11 @@
               </select>
               <select id="filter-enquiries-status" class="filter-select">
                 <option value="all">All Statuses</option>
-                <option value="new">New</option>
+                <option value="new">New (Pending)</option>
                 <option value="contacted">Contacted</option>
                 <option value="follow-up">Follow-up</option>
-                <option value="completed">Completed</option>
+                <option value="converted">Converted</option>
+                <option value="closed">Closed</option>
               </select>
             </div>
           </div>
@@ -790,17 +871,18 @@
             <table class="admin-data-table">
               <thead>
                 <tr>
-                  <th style="width: 100px;">Status</th>
-                  <th>Student / Parent Name</th>
-                  <th>Phone / Info</th>
-                  <th style="width: 100px;">Class</th>
-                  <th>Date Submitted</th>
-                  <th style="width: 180px; text-align: right;">Actions</th>
+                  <th style="width: 110px;">Status</th>
+                  <th>Student & Parent</th>
+                  <th>Contact Details</th>
+                  <th style="width: 90px;">Class</th>
+                  <th style="width: 120px;">Follow-up Date</th>
+                  <th style="width: 130px;">Submitted</th>
+                  <th style="width: 170px; text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="admin-enquiries-table-body">
                 <tr>
-                  <td colspan="6" class="table-empty">Loading enquiries...</td>
+                  <td colspan="7" class="table-empty">Loading enquiries...</td>
                 </tr>
               </tbody>
             </table>
@@ -818,8 +900,10 @@
             <div class="toolbar-right">
               <select id="filter-messages-state" class="filter-select">
                 <option value="all">All Messages</option>
-                <option value="unread">Unread</option>
+                <option value="new">New (Unread)</option>
                 <option value="read">Read</option>
+                <option value="replied">Replied</option>
+                <option value="closed">Closed</option>
               </select>
             </div>
           </div>

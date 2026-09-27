@@ -18,6 +18,8 @@ window.openUploadGalleryModal = openUploadGalleryModal;
 window.openAddNoticeModal = openAddNoticeModal;
 window.openEditNoticeModal = openEditNoticeModal;
 window.toggleNoticePublish = toggleNoticePublish;
+window.toggleNoticeArchive = toggleNoticeArchive;
+window.toggleNoticeImportant = toggleNoticeImportant;
 window.deleteNotice = deleteNotice;
 
 window.openAddEventModal = openAddEventModal;
@@ -37,6 +39,7 @@ window.moveFacultyMember = moveFacultyMember;
 window.filterFacultyTable = filterFacultyTable;
 
 window.openEnquiryDetailsModal = openEnquiryDetailsModal;
+window.saveEnquiryNoteAndStatus = saveEnquiryNoteAndStatus;
 window.openMessageDetailsModal = openMessageDetailsModal;
 window.toggleMessageReadState = toggleMessageReadState;
 window.updateSubmissionStatus = updateSubmissionStatus;
@@ -104,6 +107,34 @@ function showConfirm(message, onConfirm) {
   });
   
   openAdminModal();
+}
+
+// ==========================================
+// ADMIN THEME TOGGLE
+// ==========================================
+function initAdminThemeToggle() {
+  const toggleBtn = document.getElementById('admin-theme-toggle');
+  if (!toggleBtn) return;
+
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  updateAdminThemeButtonUI(currentTheme);
+
+  toggleBtn.addEventListener('click', () => {
+    const active = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = active === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('aps_theme', next);
+    } catch (e) {}
+    updateAdminThemeButtonUI(next);
+  });
+}
+
+function updateAdminThemeButtonUI(theme) {
+  const label = document.getElementById('admin-theme-label');
+  if (label) {
+    label.textContent = theme === 'dark' ? 'Dark' : 'Light';
+  }
 }
 
 function setButtonLoading(button, text = 'Processing...') {
@@ -252,6 +283,14 @@ async function loadAllData() {
       contentData.social_media = contentData.social_media || {};
       contentData.contact_settings = contentData.contact_settings || {};
       contentData.hostel_info = contentData.hostel_info || {};
+
+      // Keep admin sidebar & login logo synchronized with school_info.logo_url
+      if (contentData.school_info && contentData.school_info.logo_url) {
+        const sidebarLogo = document.querySelector('.admin-sidebar-logo');
+        if (sidebarLogo) sidebarLogo.src = contentData.school_info.logo_url;
+        const loginLogo = document.querySelector('.admin-login-logo');
+        if (loginLogo) loginLogo.src = contentData.school_info.logo_url;
+      }
     }
 
     // 2. Load enquiries and contact messages
@@ -355,18 +394,31 @@ function bindGlobalEvents() {
   // Notices Search & Filters
   document.getElementById('search-notices').addEventListener('input', renderNoticesTab);
   document.getElementById('filter-notices-category').addEventListener('change', renderNoticesTab);
+  const filterNoticesStatus = document.getElementById('filter-notices-status');
+  if (filterNoticesStatus) filterNoticesStatus.addEventListener('change', renderNoticesTab);
 
-  // Events Search
+  // Events Search & Filters
   document.getElementById('search-events').addEventListener('input', renderEventsTab);
+  const filterEventsStatus = document.getElementById('filter-events-status');
+  if (filterEventsStatus) filterEventsStatus.addEventListener('change', renderEventsTab);
 
   // Enquiries Filters
   document.getElementById('search-enquiries').addEventListener('input', renderEnquiriesTab);
   document.getElementById('filter-enquiries-class').addEventListener('change', renderEnquiriesTab);
   document.getElementById('filter-enquiries-status').addEventListener('change', renderEnquiriesTab);
+  const filterEnquiriesDate = document.getElementById('filter-enquiries-date');
+  if (filterEnquiriesDate) filterEnquiriesDate.addEventListener('change', renderEnquiriesTab);
 
   // Messages Filters
   document.getElementById('search-messages').addEventListener('input', renderMessagesTab);
   document.getElementById('filter-messages-state').addEventListener('change', renderMessagesTab);
+
+  // Alert Banner Action
+  const alertBtn = document.getElementById('btn-alert-view-enquiries');
+  if (alertBtn) alertBtn.addEventListener('click', () => switchTab('enquiries'));
+
+  // Theme Toggle Button
+  initAdminThemeToggle();
 
   // Media Library Search
   document.getElementById('search-media').addEventListener('input', renderMediaLibraryTab);
@@ -484,14 +536,24 @@ function syncActiveTabToState() {
       const schoolRegNumber = document.getElementById('school-reg-number');
       const schoolLogo = document.getElementById('school-logo');
       const schoolDescription = document.getElementById('school-description');
+      const schoolTimings = document.getElementById('school-timings');
+      const officeTimings = document.getElementById('office-timings');
       const aboutTitle = document.getElementById('about-title');
       const aboutText = document.getElementById('about-text');
       const admissionInfoText = document.getElementById('admission-info-text');
 
       if (schoolName) contentData.school_info.name = schoolName.value.trim();
       if (schoolRegNumber) contentData.school_info.reg_number = schoolRegNumber.value.trim();
-      if (schoolLogo) contentData.school_info.logo_url = schoolLogo.value.trim();
+      if (schoolLogo) {
+        contentData.school_info.logo_url = schoolLogo.value.trim();
+        const sidebarLogo = document.querySelector('.admin-sidebar-logo');
+        if (sidebarLogo) sidebarLogo.src = contentData.school_info.logo_url || '/uploads/media-1786798848541-655607772.png';
+        const loginLogo = document.querySelector('.admin-login-logo');
+        if (loginLogo) loginLogo.src = contentData.school_info.logo_url || '/uploads/media-1786798848541-655607772.png';
+      }
       if (schoolDescription) contentData.school_info.description = schoolDescription.value.trim();
+      if (schoolTimings) contentData.school_info.school_timings = schoolTimings.value.trim();
+      if (officeTimings) contentData.school_info.office_timings = officeTimings.value.trim();
       if (aboutTitle) contentData.school_info.about_title = aboutTitle.value.trim();
       if (aboutText) contentData.school_info.about_text = aboutText.value.trim();
       if (admissionInfoText) contentData.school_info.admission_info = admissionInfoText.value.trim();
@@ -651,72 +713,133 @@ function renderActiveTab() {
 function renderDashboardOverview() {
   if (!contentData || !submissionData) return;
 
-  // Counts
-  const totalPhotos = contentData.gallery.filter(g => g.type === 'image').length;
-  const totalVideos = contentData.gallery.filter(g => g.type === 'video').length;
-  document.getElementById('stat-gallery-count').textContent = totalPhotos + totalVideos;
-  document.getElementById('stat-notices-count').textContent = contentData.notices.length;
-  document.getElementById('stat-events-count').textContent = contentData.events.length;
+  // Enquiries counts
+  const enquiries = submissionData.enquiries || [];
+  const totalEnquiries = enquiries.length;
+  const newEnquiries = enquiries.filter(e => e.status === 'new').length;
+  const followupEnquiries = enquiries.filter(e => e.status === 'follow-up').length;
+  const convertedEnquiries = enquiries.filter(e => e.status === 'converted' || e.status === 'completed').length;
+  const closedEnquiries = enquiries.filter(e => e.status === 'closed').length;
 
-  const facultyList = contentData.faculty_staff || [];
-  const statFacultyEl = document.getElementById('stat-faculty-count');
-  if (statFacultyEl) statFacultyEl.textContent = facultyList.length;
-  const statFacultyActiveEl = document.getElementById('stat-faculty-active');
-  if (statFacultyActiveEl) {
-    const activeFacultyCount = facultyList.filter(f => f.is_active !== false).length;
-    statFacultyActiveEl.textContent = `${activeFacultyCount} active profiles`;
-  }
-  
-  const enquiriesCount = submissionData.enquiries.length;
-  const newEnquiriesCount = submissionData.enquiries.filter(e => e.status === 'new').length;
-  document.getElementById('stat-enquiries-count').textContent = enquiriesCount;
-  document.getElementById('stat-enquiries-new').textContent = `${newEnquiriesCount} new / follow-up`;
+  const statEnqCount = document.getElementById('stat-enquiries-count');
+  if (statEnqCount) statEnqCount.textContent = totalEnquiries;
 
-  const messagesCount = submissionData.messages.length;
-  const unreadMessagesCount = submissionData.messages.filter(m => !m.is_read).length;
-  document.getElementById('stat-messages-count').textContent = messagesCount;
-  document.getElementById('stat-messages-unread').textContent = `${unreadMessagesCount} unread`;
+  const statNewEnqCount = document.getElementById('stat-new-enquiries-count');
+  if (statNewEnqCount) statNewEnqCount.textContent = newEnquiries;
 
-  // Render recent submissions
-  const container = document.getElementById('dashboard-recent-submissions');
-  container.innerHTML = '';
+  const statFollowupCount = document.getElementById('stat-followup-count');
+  if (statFollowupCount) statFollowupCount.textContent = followupEnquiries;
 
-  const recents = [
-    ...submissionData.enquiries.map(e => ({ ...e, type: 'enquiry', text: `Applied for ${e.class_apply.toUpperCase()}` })),
-    ...submissionData.messages.map(m => ({ ...m, type: 'message', text: m.subject || 'General message' }))
-  ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5); // top 5 newest
+  const statConvertedCount = document.getElementById('stat-converted-count');
+  if (statConvertedCount) statConvertedCount.textContent = convertedEnquiries;
 
-  if (recents.length === 0) {
-    container.innerHTML = '<p class="empty-list-text">No recent enquiries or contact messages.</p>';
-    return;
-  }
+  const statClosedCount = document.getElementById('stat-closed-count');
+  if (statClosedCount) statClosedCount.textContent = closedEnquiries;
 
-  recents.forEach(item => {
-    const timeStr = formatRelativeTime(item.date);
-    const badgeClass = item.type === 'enquiry' ? 'enquiry' : 'message';
-    const badgeText = item.type === 'enquiry' ? 'Enquiry' : 'Message';
-    
-    const div = document.createElement('div');
-    div.className = 'submission-item';
-    div.innerHTML = `
-      <span class="sub-badge ${badgeClass}">${badgeText}</span>
-      <div class="sub-info">
-        <div class="sub-name">${escapeHtml(item.parent_name || item.name)}</div>
-        <div class="sub-details">${escapeHtml(item.text)}</div>
-      </div>
-      <div class="sub-date">${timeStr}</div>
-    `;
-    // Bind click to open details
-    div.style.cursor = 'pointer';
-    div.addEventListener('click', () => {
-      if (item.type === 'enquiry') {
-        openEnquiryDetailsModal(item.id);
-      } else {
-        openMessageDetailsModal(item.id);
-      }
-    });
-    container.appendChild(div);
+  // Messages counts
+  const messages = submissionData.messages || [];
+  const unreadMessagesCount = messages.filter(m => !m.is_read || m.status === 'new').length;
+  const statMessagesCount = document.getElementById('stat-messages-count');
+  if (statMessagesCount) statMessagesCount.textContent = messages.length;
+  const statMessagesUnread = document.getElementById('stat-messages-unread');
+  if (statMessagesUnread) statMessagesUnread.textContent = `${unreadMessagesCount} unread`;
+
+  // Events count (Upcoming vs Past)
+  const events = contentData.events || [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcomingEvents = events.filter(ev => {
+    if (ev.is_published === false) return false;
+    const d = new Date(ev.date);
+    d.setHours(0, 0, 0, 0);
+    return isNaN(d.getTime()) || d >= today;
   });
+  const statEventsCount = document.getElementById('stat-events-count');
+  if (statEventsCount) statEventsCount.textContent = events.length;
+  const statEventsDesc = document.getElementById('stat-events-desc');
+  if (statEventsDesc) statEventsDesc.textContent = `${upcomingEvents.length} upcoming`;
+
+  // Notices count
+  const notices = contentData.notices || [];
+  const publishedNotices = notices.filter(n => n.is_published !== false && !n.is_archived);
+  const statNoticesCount = document.getElementById('stat-notices-count');
+  if (statNoticesCount) statNoticesCount.textContent = notices.length;
+  const statNoticesDesc = document.getElementById('stat-notices-desc');
+  if (statNoticesDesc) statNoticesDesc.textContent = `${publishedNotices.length} published`;
+
+  // Alert Banner
+  const alertBanner = document.getElementById('admin-alert-banner');
+  const alertText = document.getElementById('admin-alert-text');
+  if (alertBanner) {
+    if (newEnquiries > 0 || unreadMessagesCount > 0) {
+      alertBanner.style.display = 'flex';
+      let msg = 'Attention: ';
+      if (newEnquiries > 0 && unreadMessagesCount > 0) {
+        msg += `You have ${newEnquiries} new admission ${newEnquiries === 1 ? 'enquiry' : 'enquiries'} and ${unreadMessagesCount} unread ${unreadMessagesCount === 1 ? 'message' : 'messages'} waiting for review.`;
+      } else if (newEnquiries > 0) {
+        msg += `You have ${newEnquiries} new admission ${newEnquiries === 1 ? 'enquiry' : 'enquiries'} waiting for review.`;
+      } else {
+        msg += `You have ${unreadMessagesCount} unread contact ${unreadMessagesCount === 1 ? 'message' : 'messages'} waiting for review.`;
+      }
+      if (alertText) alertText.textContent = msg;
+    } else {
+      alertBanner.style.display = 'none';
+    }
+  }
+
+  // Render Recent Admission Enquiries
+  const recentEnqContainer = document.getElementById('dashboard-recent-enquiries');
+  if (recentEnqContainer) {
+    recentEnqContainer.innerHTML = '';
+    const recentEnquiries = [...enquiries].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+    if (recentEnquiries.length === 0) {
+      recentEnqContainer.innerHTML = '<p class="empty-list-text">No admission enquiries received yet.</p>';
+    } else {
+      recentEnquiries.forEach(item => {
+        const timeStr = formatRelativeTime(item.date);
+        const div = document.createElement('div');
+        div.className = 'submission-item';
+        div.style.cursor = 'pointer';
+        div.innerHTML = `
+          <span class="status-badge ${item.status || 'new'}">${item.status || 'new'}</span>
+          <div class="sub-info">
+            <div class="sub-name">${escapeHtml(item.student_name)} (Parent: ${escapeHtml(item.parent_name)})</div>
+            <div class="sub-details">Applying for ${item.class_apply.replace('class-', 'Class ').toUpperCase()} | Phone: ${item.phone}</div>
+          </div>
+          <div class="sub-date">${timeStr}</div>
+        `;
+        div.addEventListener('click', () => openEnquiryDetailsModal(item.id));
+        recentEnqContainer.appendChild(div);
+      });
+    }
+  }
+
+  // Render Recent Contact Messages
+  const container = document.getElementById('dashboard-recent-submissions');
+  if (container) {
+    container.innerHTML = '';
+    const recentMessages = [...messages].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+    if (recentMessages.length === 0) {
+      container.innerHTML = '<p class="empty-list-text">No recent contact messages.</p>';
+    } else {
+      recentMessages.forEach(item => {
+        const timeStr = formatRelativeTime(item.date);
+        const div = document.createElement('div');
+        div.className = 'submission-item';
+        div.style.cursor = 'pointer';
+        div.innerHTML = `
+          <span class="sub-badge message">${item.is_read ? 'Read' : 'New'}</span>
+          <div class="sub-info">
+            <div class="sub-name">${escapeHtml(item.name)}</div>
+            <div class="sub-details">${escapeHtml(item.subject || 'General message')}</div>
+          </div>
+          <div class="sub-date">${timeStr}</div>
+        `;
+        div.addEventListener('click', () => openMessageDetailsModal(item.id));
+        container.appendChild(div);
+      });
+    }
+  }
 }
 
 // --- HOMEPAGE SETTINGS ---
@@ -757,6 +880,10 @@ function populateSchoolInfo() {
   document.getElementById('school-reg-number').value = info.reg_number || '';
   document.getElementById('school-logo').value = info.logo_url || '';
   document.getElementById('school-description').value = info.description || '';
+  const schoolTimingsEl = document.getElementById('school-timings');
+  if (schoolTimingsEl) schoolTimingsEl.value = info.school_timings || 'Mon – Sat: 8:00 AM – 2:00 PM';
+  const officeTimingsEl = document.getElementById('office-timings');
+  if (officeTimingsEl) officeTimingsEl.value = info.office_timings || 'Mon – Sat: 8:00 AM – 3:30 PM';
   document.getElementById('about-title').value = info.about_title || '';
   document.getElementById('about-text').value = info.about_text || '';
   document.getElementById('admission-info-text').value = info.admission_info || '';
@@ -869,7 +996,7 @@ function renderFacultyTab() {
       </td>
       <td style="text-align: center;">${photoMarkup}</td>
       <td>
-        <div style="font-weight: 600; color: var(--primary-navy); font-size: 14px;">${escapeHtml(staff.name)}</div>
+        <div style="font-weight: 600; color: var(--text-dark); font-size: 14px;">${escapeHtml(staff.name)}</div>
         <div style="font-size: 12.5px; color: var(--text-light); margin-top: 2px;">${escapeHtml(staff.designation || 'Staff')}</div>
       </td>
       <td>
@@ -1598,11 +1725,21 @@ function renderNoticesTab() {
 
   const search = document.getElementById('search-notices').value.toLowerCase().trim();
   const categoryFilter = document.getElementById('filter-notices-category').value;
+  const statusFilterEl = document.getElementById('filter-notices-status');
+  const statusFilter = statusFilterEl ? statusFilterEl.value : 'all';
 
   const filteredNotices = contentData.notices.filter(n => {
     const matchesSearch = n.title.toLowerCase().includes(search) || n.text.toLowerCase().includes(search);
     const matchesCategory = categoryFilter === 'all' || n.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    let matchesStatus = true;
+    if (statusFilter === 'published') {
+      matchesStatus = n.is_published !== false && !n.is_archived;
+    } else if (statusFilter === 'unpublished') {
+      matchesStatus = n.is_published === false && !n.is_archived;
+    } else if (statusFilter === 'archived') {
+      matchesStatus = !!n.is_archived;
+    }
+    return matchesSearch && matchesCategory && matchesStatus;
   });
 
   if (filteredNotices.length === 0) {
@@ -1611,8 +1748,16 @@ function renderNoticesTab() {
   }
 
   filteredNotices.forEach(n => {
-    const statusText = n.is_published ? 'Published' : 'Draft';
-    const statusClass = n.is_published ? 'published' : 'draft';
+    let statusText = 'Published';
+    let statusClass = 'published';
+    if (n.is_archived) {
+      statusText = 'Archived';
+      statusClass = 'closed';
+    } else if (n.is_published === false) {
+      statusText = 'Draft';
+      statusClass = 'draft';
+    }
+
     const importantText = n.is_important ? 'Important' : 'Normal';
     const importantClass = n.is_important ? 'important' : 'read';
 
@@ -1638,7 +1783,9 @@ function renderNoticesTab() {
       <td>
         <div class="actions-cell">
           <button class="btn-icon-only edit" onclick="openEditNoticeModal('${n.id}')" title="Edit notice">✏️</button>
-          <button class="btn-icon-only" onclick="toggleNoticePublish('${n.id}')" title="${n.is_published ? 'Unpublish' : 'Publish'}">${n.is_published ? '👁️' : '🕶️'}</button>
+          <button class="btn-icon-only" onclick="toggleNoticeImportant('${n.id}')" title="${n.is_important ? 'Remove Star/Important' : 'Mark as Important'}">${n.is_important ? '⭐' : '☆'}</button>
+          <button class="btn-icon-only" onclick="toggleNoticePublish('${n.id}')" title="${n.is_published ? 'Unpublish notice' : 'Publish notice'}">${n.is_published ? '👁️' : '🕶️'}</button>
+          <button class="btn-icon-only" onclick="toggleNoticeArchive('${n.id}')" title="${n.is_archived ? 'Restore from Archive' : 'Archive notice'}">${n.is_archived ? '📂' : '📁'}</button>
           <button class="btn-icon-only delete" onclick="deleteNotice('${n.id}')" title="Delete notice">🗑️</button>
         </div>
       </td>
@@ -1807,6 +1954,28 @@ function toggleNoticePublish(id) {
   );
 }
 
+function toggleNoticeArchive(id) {
+  const notice = contentData.notices.find(n => n.id === id);
+  if (!notice) return;
+
+  notice.is_archived = !notice.is_archived;
+  saveContentData(
+    notice.is_archived ? 'Notice archived successfully.' : 'Notice restored from archive.',
+    () => { renderNoticesTab(); }
+  );
+}
+
+function toggleNoticeImportant(id) {
+  const notice = contentData.notices.find(n => n.id === id);
+  if (!notice) return;
+
+  notice.is_important = !notice.is_important;
+  saveContentData(
+    notice.is_important ? 'Notice marked as important.' : 'Important badge removed from notice.',
+    () => { renderNoticesTab(); }
+  );
+}
+
 function deleteNotice(id) {
   showConfirm('Are you sure you want to delete this notice? This action is permanent.', async () => {
     contentData.notices = contentData.notices.filter(n => n.id !== id);
@@ -1822,13 +1991,27 @@ function renderEventsTab() {
   tbody.innerHTML = '';
 
   const search = document.getElementById('search-events').value.toLowerCase().trim();
+  const statusFilterEl = document.getElementById('filter-events-status');
+  const statusFilter = statusFilterEl ? statusFilterEl.value : 'all';
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const filteredEvents = contentData.events.filter(ev => {
-    return ev.title.toLowerCase().includes(search) || ev.description.toLowerCase().includes(search);
+    const matchesSearch = ev.title.toLowerCase().includes(search) || ev.description.toLowerCase().includes(search);
+    const evDate = new Date(ev.date);
+    evDate.setHours(0, 0, 0, 0);
+    const isUpcoming = isNaN(evDate.getTime()) || evDate >= today;
+
+    let matchesStatus = true;
+    if (statusFilter === 'upcoming') matchesStatus = isUpcoming;
+    else if (statusFilter === 'past') matchesStatus = !isUpcoming;
+
+    return matchesSearch && matchesStatus;
   });
 
   if (filteredEvents.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No events found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No events found matching the filters.</td></tr>';
     return;
   }
 
@@ -1836,9 +2019,16 @@ function renderEventsTab() {
     const statusText = ev.is_published ? 'Published' : 'Draft';
     const statusClass = ev.is_published ? 'published' : 'draft';
 
+    const evDate = new Date(ev.date);
+    evDate.setHours(0, 0, 0, 0);
+    const isUpcoming = isNaN(evDate.getTime()) || evDate >= today;
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+      <td>
+        <span class="status-badge ${statusClass}">${statusText}</span>
+        <div style="margin-top: 4px;"><span class="status-badge ${isUpcoming ? 'published' : 'closed'}" style="font-size: 10px;">${isUpcoming ? 'Upcoming' : 'Past'}</span></div>
+      </td>
       <td>
         ${ev.image_url ? `<img src="${ev.image_url}" class="event-table-img" alt="${escapeHtml(ev.title)}">` : `<div style="text-align: center; color: var(--text-light); font-size: 11px; padding: 12px; background: var(--bg-light); border-radius: 4px;">No Image</div>`}
       </td>
@@ -2216,52 +2406,85 @@ function renderEnquiriesTab() {
   const tbody = document.getElementById('admin-enquiries-table-body');
   tbody.innerHTML = '';
 
-  const search = document.getElementById('search-enquiries').value.toLowerCase().trim();
-  const classFilter = document.getElementById('filter-enquiries-class').value;
-  const statusFilter = document.getElementById('filter-enquiries-status').value;
+  const search = (document.getElementById('search-enquiries')?.value || '').toLowerCase().trim();
+  const classFilter = document.getElementById('filter-enquiries-class')?.value || 'all';
+  const statusFilter = document.getElementById('filter-enquiries-status')?.value || 'all';
+  const dateFilter = document.getElementById('filter-enquiries-date')?.value || 'all';
 
-  const filtered = submissionData.enquiries.filter(e => {
-    const matchesSearch = e.student_name.toLowerCase().includes(search) || e.parent_name.toLowerCase().includes(search) || e.phone.includes(search);
+  const now = new Date();
+
+  const filtered = (submissionData.enquiries || []).filter(e => {
+    const student = (e.student_name || '').toLowerCase();
+    const parent = (e.parent_name || '').toLowerCase();
+    const phone = (e.phone || '');
+    const email = (e.email || '').toLowerCase();
+    const matchesSearch = !search || student.includes(search) || parent.includes(search) || phone.includes(search) || email.includes(search);
+
     const matchesClass = classFilter === 'all' || e.class_apply === classFilter;
-    const matchesStatus = statusFilter === 'all' || e.status === statusFilter;
-    return matchesSearch && matchesClass && matchesStatus;
+    
+    // Status normalisation
+    const curStatus = (e.status === 'completed') ? 'converted' : (e.status || 'new');
+    const matchesStatus = statusFilter === 'all' || curStatus === statusFilter;
+
+    let matchesDate = true;
+    if (dateFilter !== 'all') {
+      const enqDate = new Date(e.date);
+      if (dateFilter === 'today') {
+        matchesDate = enqDate.toDateString() === now.toDateString();
+      } else if (dateFilter === '7days') {
+        matchesDate = (now - enqDate) <= (7 * 24 * 60 * 60 * 1000);
+      } else if (dateFilter === '30days') {
+        matchesDate = (now - enqDate) <= (30 * 24 * 60 * 60 * 1000);
+      }
+    }
+
+    return matchesSearch && matchesClass && matchesStatus && matchesDate;
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No admission enquiries found matching the filters.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="table-empty">No admission enquiries found matching the filters.</td></tr>';
     return;
   }
 
   filtered.forEach(e => {
     const dateStr = formatDate(e.date);
+    const curStatus = (e.status === 'completed') ? 'converted' : (e.status || 'new');
     
-    // Status text & class
-    const statusClass = e.status; // new, contacted, follow-up, completed
-    const statusLabel = e.status === 'follow-up' ? 'Follow-up' : e.status;
+    let statusLabel = curStatus.charAt(0).toUpperCase() + curStatus.slice(1);
+    if (curStatus === 'follow-up') statusLabel = 'Follow-up';
+
+    let followUpDateDisplay = '<span class="text-muted" style="font-size: 11px;">None set</span>';
+    if (e.follow_up_date) {
+      const fDate = new Date(e.follow_up_date);
+      const isPast = fDate < new Date();
+      followUpDateDisplay = `<span class="text-bold" style="color: ${isPast ? '#f44336' : 'var(--accent-gold)'}; font-size: 12px;">📅 ${e.follow_up_date}</span>`;
+    }
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+      <td><span class="status-badge ${curStatus}">${statusLabel}</span></td>
       <td>
         <div class="text-bold">${escapeHtml(e.student_name)}</div>
-        <div class="text-muted">Parent: ${escapeHtml(e.parent_name)}</div>
+        <div class="text-muted" style="font-size: 12px;">Parent: ${escapeHtml(e.parent_name)}</div>
       </td>
       <td>
-        <div class="text-bold">${e.phone}</div>
-        <div class="text-muted" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(e.message || '')}</div>
+        <div class="text-bold"><a href="tel:${e.phone}" style="color: #2196f3;">${e.phone}</a></div>
+        ${e.email ? `<div class="text-muted" style="font-size: 11px; max-width: 170px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(e.email)}</div>` : ''}
       </td>
-      <td><span class="text-bold" style="text-transform: uppercase;">${e.class_apply.replace('class-', 'Class ')}</span></td>
-      <td>${dateStr}</td>
+      <td><span class="text-bold" style="text-transform: uppercase;">${(e.class_apply || '').replace('class-', 'Class ')}</span></td>
+      <td>${followUpDateDisplay}</td>
+      <td style="font-size: 12px;">${dateStr}</td>
       <td>
         <div class="actions-cell">
           <button class="btn btn-secondary btn-sm" onclick="openEnquiryDetailsModal('${e.id}')">👁️ View</button>
-          <select class="filter-select" style="padding: 4px 8px; font-size: 11px;" onchange="updateSubmissionStatus('enquiry', '${e.id}', this.value)">
-            <option value="new" ${e.status === 'new' ? 'selected' : ''}>New</option>
-            <option value="contacted" ${e.status === 'contacted' ? 'selected' : ''}>Contacted</option>
-            <option value="follow-up" ${e.status === 'follow-up' ? 'selected' : ''}>Follow-up</option>
-            <option value="completed" ${e.status === 'completed' ? 'selected' : ''}>Completed</option>
+          <select class="filter-select" style="padding: 4px 6px; font-size: 11px;" onchange="updateSubmissionStatus('enquiry', '${e.id}', this.value)">
+            <option value="new" ${curStatus === 'new' ? 'selected' : ''}>New</option>
+            <option value="contacted" ${curStatus === 'contacted' ? 'selected' : ''}>Contacted</option>
+            <option value="follow-up" ${curStatus === 'follow-up' ? 'selected' : ''}>Follow-up</option>
+            <option value="converted" ${curStatus === 'converted' ? 'selected' : ''}>Converted</option>
+            <option value="closed" ${curStatus === 'closed' ? 'selected' : ''}>Closed</option>
           </select>
-          <button class="btn-icon-only delete" onclick="deleteSubmission('enquiry', '${e.id}')">🗑️</button>
+          <button class="btn-icon-only delete" onclick="deleteSubmission('enquiry', '${e.id}')" title="Delete enquiry">🗑️</button>
         </div>
       </td>
     `;
@@ -2270,54 +2493,151 @@ function renderEnquiriesTab() {
 }
 
 function openEnquiryDetailsModal(id) {
-  const enq = submissionData.enquiries.find(e => e.id === id);
+  const enq = (submissionData.enquiries || []).find(e => e.id === id);
   if (!enq) return;
 
   const dateStr = formatDate(enq.date);
+  const curStatus = (enq.status === 'completed') ? 'converted' : (enq.status || 'new');
   const body = document.getElementById('modal-body');
-  document.getElementById('modal-title').textContent = 'Admission Enquiry Details';
+  document.getElementById('modal-title').textContent = `Enquiry: ${enq.student_name} (${(enq.class_apply || '').replace('class-', 'Class ').toUpperCase()})`;
+
+  // Build Notification Report markup
+  let notifReportHtml = '';
+  if (enq.notification_status) {
+    const wDir = enq.notification_status.whatsapp?.director?.status || 'unconfigured';
+    const wPrin = enq.notification_status.whatsapp?.principal?.status || 'unconfigured';
+    const sDir = enq.notification_status.sms?.director?.status || 'unconfigured';
+    const sPrin = enq.notification_status.sms?.principal?.status || 'unconfigured';
+
+    const getPill = (st) => {
+      if (st === 'sent' || st === 'delivered') return '<span style="color:#4caf50; font-weight:600;">✓ Dispatched</span>';
+      if (st === 'queued') return '<span style="color:#ff9800; font-weight:600;">⏳ Queued</span>';
+      return '<span style="color:var(--text-light); font-size:11px;">(Ready - configure API key)</span>';
+    };
+
+    notifReportHtml = `
+      <div style="background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 15px; font-size: 12px;">
+        <div style="font-weight: 700; margin-bottom: 6px; color: var(--text-dark);">📢 School Admin Notification Dispatch Report:</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div><strong>Director WhatsApp:</strong> ${getPill(wDir)}</div>
+          <div><strong>Principal WhatsApp:</strong> ${getPill(wPrin)}</div>
+          <div><strong>Director SMS:</strong> ${getPill(sDir)}</div>
+          <div><strong>Principal SMS:</strong> ${getPill(sPrin)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Build Follow-up Notes list markup
+  let notesHtml = '';
+  if (enq.notes && enq.notes.length > 0) {
+    notesHtml = `
+      <div style="margin-top: 15px;">
+        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text-dark);">Previous Follow-up Notes (${enq.notes.length})</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
+          ${enq.notes.slice().reverse().map(n => `
+            <div style="background: var(--bg-light); border-left: 3px solid var(--accent-gold); padding: 8px 12px; border-radius: 4px; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between; color: var(--text-light); font-size: 11px; margin-bottom: 3px;">
+                <span class="text-bold">${escapeHtml(n.author || 'Admin')}</span>
+                <span>${formatRelativeTime(n.date)}</span>
+              </div>
+              <div style="color: var(--text-dark); white-space: pre-wrap;">${escapeHtml(n.text)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Build Audit History timeline markup
+  let historyHtml = '';
+  if (enq.history && enq.history.length > 0) {
+    historyHtml = `
+      <div style="margin-top: 15px;">
+        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text-dark);">Activity & Status Timeline</h4>
+        <div style="font-size: 11px; color: var(--text-light); display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto;">
+          ${enq.history.slice().reverse().map(h => `
+            <div style="padding: 4px 0; border-bottom: 1px dashed var(--border-color);">
+              <span class="text-bold" style="color: var(--text-dark);">${escapeHtml(h.action.replace('_', ' ').toUpperCase())}:</span>
+              ${h.note ? escapeHtml(h.note) : ''}
+              ${h.from && h.to ? `Changed from <em>${h.from}</em> to <strong>${h.to}</strong>` : ''}
+              ${h.date_set ? `Follow-up set to <strong>${h.date_set}</strong>` : ''}
+              <span style="float: right;">${formatRelativeTime(h.date)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
 
   body.innerHTML = `
-    <div class="detail-view-row">
-      <div class="detail-label">Status</div>
-      <div class="detail-value">
-        <select class="filter-select" id="detail-enquiry-status" onchange="updateSubmissionStatus('enquiry', '${enq.id}', this.value)">
-          <option value="new" ${enq.status === 'new' ? 'selected' : ''}>New</option>
-          <option value="contacted" ${enq.status === 'contacted' ? 'selected' : ''}>Contacted</option>
-          <option value="follow-up" ${enq.status === 'follow-up' ? 'selected' : ''}>Follow-up</option>
-          <option value="completed" ${enq.status === 'completed' ? 'selected' : ''}>Completed</option>
-        </select>
+    ${notifReportHtml}
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+      <div class="detail-view-row" style="margin: 0;">
+        <div class="detail-label">Student Name</div>
+        <div class="detail-value text-bold">${escapeHtml(enq.student_name)}</div>
+      </div>
+      <div class="detail-view-row" style="margin: 0;">
+        <div class="detail-label">Parent Name</div>
+        <div class="detail-value text-bold">${escapeHtml(enq.parent_name)}</div>
+      </div>
+      <div class="detail-view-row" style="margin: 0;">
+        <div class="detail-label">Applying Class</div>
+        <div class="detail-value" style="text-transform: uppercase;">${(enq.class_apply || '').replace('class-', 'Class ')}</div>
+      </div>
+      <div class="detail-view-row" style="margin: 0;">
+        <div class="detail-label">Date Submitted</div>
+        <div class="detail-value">${dateStr}</div>
       </div>
     </div>
-    <div class="detail-view-row">
-      <div class="detail-label">Student Name</div>
-      <div class="detail-value text-bold">${escapeHtml(enq.student_name)}</div>
-    </div>
-    <div class="detail-view-row">
-      <div class="detail-label">Parent Name</div>
-      <div class="detail-value">${escapeHtml(enq.parent_name)}</div>
-    </div>
-    <div class="detail-view-row">
-      <div class="detail-label">Applying Class</div>
-      <div class="detail-value" style="text-transform: uppercase;">${enq.class_apply.replace('class-', 'Class ')}</div>
-    </div>
-    <div class="detail-view-row">
-      <div class="detail-label">Phone Number</div>
-      <div class="detail-value">
-        <a href="tel:${enq.phone}" class="text-bold" style="color: #2196f3;">${enq.phone}</a>
-        &nbsp;&nbsp;
-        <a href="https://wa.me/91${enq.phone}" target="_blank" class="btn btn-success btn-sm" style="padding: 2px 6px;">WhatsApp Parent</a>
+
+    <div class="detail-view-row" style="margin-bottom: 12px;">
+      <div class="detail-label">Phone & Contact</div>
+      <div class="detail-value" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <a href="tel:${enq.phone}" class="text-bold" style="color: #2196f3; font-size: 14px;">${enq.phone}</a>
+        <a href="https://wa.me/91${enq.phone}" target="_blank" class="btn btn-success btn-sm" style="padding: 3px 8px; font-size: 11px;">💬 WhatsApp Parent</a>
+        <a href="tel:${enq.phone}" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11px;">📞 Call</a>
+        ${enq.email ? `<a href="mailto:${enq.email}" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11px;">✉️ ${escapeHtml(enq.email)}</a>` : ''}
       </div>
     </div>
-    <div class="detail-view-row">
-      <div class="detail-label">Date Submitted</div>
-      <div class="detail-value">${dateStr}</div>
+
+    <div class="detail-view-row" style="flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 15px;">
+      <div class="detail-label">Applicant Enquiry Message</div>
+      <div class="detail-value" style="width:100%; padding: 10px; background: var(--bg-light); border-radius: 4px; white-space: pre-wrap; font-size: 13px;">${escapeHtml(enq.message || 'No additional message was submitted.')}</div>
     </div>
-    <div class="detail-view-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-      <div class="detail-label">Message / Notes</div>
-      <div class="detail-value" style="width:100%; padding: 12px; background: var(--bg-light); border-radius: 4px; white-space: pre-wrap;">${escapeHtml(enq.message || 'No additional message was submitted.')}</div>
+
+    <!-- Enquiry Pipeline Follow-up Card -->
+    <div style="background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 6px; padding: 14px; margin-bottom: 15px;">
+      <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--text-dark);">📌 Update Admission Pipeline & Follow-up</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Enquiry Status</label>
+          <select class="filter-select" id="detail-enquiry-status" style="width: 100%;">
+            <option value="new" ${curStatus === 'new' ? 'selected' : ''}>New (Uncontacted)</option>
+            <option value="contacted" ${curStatus === 'contacted' ? 'selected' : ''}>Contacted</option>
+            <option value="follow-up" ${curStatus === 'follow-up' ? 'selected' : ''}>Follow-up Needed</option>
+            <option value="converted" ${curStatus === 'converted' ? 'selected' : ''}>Converted (Admitted)</option>
+            <option value="closed" ${curStatus === 'closed' ? 'selected' : ''}>Closed / Declined</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Next Follow-up Date</label>
+          <input type="date" id="modal-follow-up-date" value="${enq.follow_up_date || ''}" style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-input); color: var(--text-dark);">
+        </div>
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Add Follow-up Conversation Note</label>
+        <textarea id="modal-new-note" rows="2" placeholder="Record discussion details with parent, fee queries, campus visit date, etc." style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-input); color: var(--text-dark); font-size: 13px; resize: vertical;"></textarea>
+      </div>
+      <div style="margin-top: 10px; text-align: right;">
+        <button type="button" class="btn btn-primary btn-sm" id="btn-save-enquiry-note" onclick="saveEnquiryNoteAndStatus('${enq.id}')">💾 Save Note & Update Status</button>
+      </div>
     </div>
-    <div class="form-submit-row">
+
+    ${notesHtml}
+    ${historyHtml}
+
+    <div class="form-submit-row" style="margin-top: 20px;">
       <button class="btn btn-danger" onclick="deleteSubmission('enquiry', '${enq.id}'); closeAdminModal();" style="float: left;">🗑️ Delete Enquiry</button>
       <button class="btn btn-primary" onclick="closeAdminModal()">Close Window</button>
     </div>
@@ -2326,19 +2646,76 @@ function openEnquiryDetailsModal(id) {
   openAdminModal();
 }
 
+async function saveEnquiryNoteAndStatus(id) {
+  const enq = (submissionData.enquiries || []).find(e => e.id === id);
+  if (!enq) return;
+
+  const statusSelect = document.getElementById('detail-enquiry-status');
+  const followUpDateInput = document.getElementById('modal-follow-up-date');
+  const noteTextarea = document.getElementById('modal-new-note');
+  const saveBtn = document.getElementById('btn-save-enquiry-note');
+
+  const newStatus = statusSelect ? statusSelect.value : enq.status;
+  const followUpDate = followUpDateInput ? followUpDateInput.value : enq.follow_up_date;
+  const noteText = noteTextarea ? noteTextarea.value.trim() : '';
+
+  if (saveBtn) setButtonLoading(saveBtn, 'Saving...');
+
+  try {
+    const res = await fetch('/api/enquiry-note', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: id,
+        status: newStatus,
+        followUpDate: followUpDate || null,
+        noteText: noteText
+      })
+    });
+
+    const data = await res.json();
+    if (data.success && data.enquiry) {
+      const idx = submissionData.enquiries.findIndex(e => e.id === id);
+      if (idx !== -1) {
+        submissionData.enquiries[idx] = data.enquiry;
+      }
+      showToast('Enquiry pipeline & note updated successfully!', 'success');
+      renderEnquiriesTab();
+      updateBadgeCounts();
+      renderDashboardOverview();
+      openEnquiryDetailsModal(id);
+    } else {
+      showToast(data.message || 'Failed to save note.', 'error');
+      if (saveBtn) resetButtonLoading(saveBtn);
+    }
+  } catch (err) {
+    console.error('Error saving enquiry note:', err);
+    showToast('Network error while saving note.', 'error');
+    if (saveBtn) resetButtonLoading(saveBtn);
+  }
+}
+
 // --- CONTACT MESSAGES ---
 function renderMessagesTab() {
   const tbody = document.getElementById('admin-messages-table-body');
   tbody.innerHTML = '';
 
-  const search = document.getElementById('search-messages').value.toLowerCase().trim();
-  const stateFilter = document.getElementById('filter-messages-state').value;
+  const search = (document.getElementById('search-messages')?.value || '').toLowerCase().trim();
+  const stateFilter = document.getElementById('filter-messages-state')?.value || 'all';
 
-  const filtered = submissionData.messages.filter(m => {
-    const matchesSearch = m.name.toLowerCase().includes(search) || m.subject.toLowerCase().includes(search) || m.message.toLowerCase().includes(search);
-    const matchesState = stateFilter === 'all' || 
-                        (stateFilter === 'unread' && !m.is_read) || 
-                        (stateFilter === 'read' && m.is_read);
+  const filtered = (submissionData.messages || []).filter(m => {
+    const name = (m.name || '').toLowerCase();
+    const subject = (m.subject || '').toLowerCase();
+    const message = (m.message || '').toLowerCase();
+    const matchesSearch = !search || name.includes(search) || subject.includes(search) || message.includes(search);
+
+    const curStatus = m.status || (m.is_read ? 'read' : 'new');
+    let matchesState = true;
+    if (stateFilter === 'new') matchesState = (curStatus === 'new');
+    else if (stateFilter === 'read') matchesState = (curStatus === 'read');
+    else if (stateFilter === 'replied') matchesState = (curStatus === 'replied');
+    else if (stateFilter === 'closed') matchesState = (curStatus === 'closed');
+
     return matchesSearch && matchesState;
   });
 
@@ -2349,27 +2726,34 @@ function renderMessagesTab() {
 
   filtered.forEach(m => {
     const dateStr = formatDate(m.date);
-    const statusText = m.is_read ? 'Read' : 'Unread';
-    const statusClass = m.is_read ? 'read' : 'unread';
+    const curStatus = m.status || (m.is_read ? 'read' : 'new');
+    
+    let statusClass = curStatus;
+    let statusLabel = curStatus.charAt(0).toUpperCase() + curStatus.slice(1);
 
     const tr = document.createElement('tr');
-    tr.className = m.is_read ? '' : 'unread-row-highlight'; // Highlight bold
+    tr.className = (curStatus === 'new') ? 'unread-row-highlight' : '';
     tr.innerHTML = `
-      <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+      <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
       <td>
         <div class="text-bold">${escapeHtml(m.name)}</div>
-        <div class="text-muted">${escapeHtml(m.email || 'No Email')} | ${m.phone || 'No Phone'}</div>
+        <div class="text-muted" style="font-size: 12px;">${escapeHtml(m.email || 'No Email')} | ${m.phone || 'No Phone'}</div>
       </td>
       <td>
         <div class="text-bold">${escapeHtml(m.subject)}</div>
         <div class="text-muted" style="max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(m.message)}</div>
       </td>
-      <td>${dateStr}</td>
+      <td style="font-size: 12px;">${dateStr}</td>
       <td>
         <div class="actions-cell">
           <button class="btn btn-secondary btn-sm" onclick="openMessageDetailsModal('${m.id}')">📖 Read</button>
-          <button class="btn-icon-only" onclick="toggleMessageReadState('${m.id}')" title="${m.is_read ? 'Mark unread' : 'Mark read'}">${m.is_read ? '✉️' : '📩'}</button>
-          <button class="btn-icon-only delete" onclick="deleteSubmission('message', '${m.id}')">🗑</button>
+          <select class="filter-select" style="padding: 4px 6px; font-size: 11px;" onchange="updateSubmissionStatus('message', '${m.id}', this.value)">
+            <option value="new" ${curStatus === 'new' ? 'selected' : ''}>New</option>
+            <option value="read" ${curStatus === 'read' ? 'selected' : ''}>Read</option>
+            <option value="replied" ${curStatus === 'replied' ? 'selected' : ''}>Replied</option>
+            <option value="closed" ${curStatus === 'closed' ? 'selected' : ''}>Closed</option>
+          </select>
+          <button class="btn-icon-only delete" onclick="deleteSubmission('message', '${m.id}')" title="Delete message">🗑</button>
         </div>
       </td>
     `;
@@ -2378,59 +2762,82 @@ function renderMessagesTab() {
 }
 
 async function openMessageDetailsModal(id) {
-  const msg = submissionData.messages.find(m => m.id === id);
+  const msg = (submissionData.messages || []).find(m => m.id === id);
   if (!msg) return;
 
   const dateStr = formatDate(msg.date);
+  const curStatus = msg.status || (msg.is_read ? 'read' : 'new');
   
-  // Set details view
   const body = document.getElementById('modal-body');
-  document.getElementById('modal-title').textContent = 'Read Message';
+  document.getElementById('modal-title').textContent = 'Contact Message Details';
 
   body.innerHTML = `
-    <div class="detail-view-row">
-      <div class="detail-label">Sender Name</div>
-      <div class="detail-value text-bold">${escapeHtml(msg.name)}</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+      <div class="detail-view-row" style="margin: 0;">
+        <div class="detail-label">Sender Name</div>
+        <div class="detail-value text-bold">${escapeHtml(msg.name)}</div>
+      </div>
+      <div class="detail-view-row" style="margin: 0;">
+        <div class="detail-label">Date Received</div>
+        <div class="detail-value">${dateStr}</div>
+      </div>
     </div>
-    <div class="detail-view-row">
-      <div class="detail-label">Email Address</div>
-      <div class="detail-value"><a href="mailto:${msg.email}" style="color: #2196f3;">${msg.email || 'N/A'}</a></div>
+
+    <div class="detail-view-row" style="margin-bottom: 12px;">
+      <div class="detail-label">Direct Communication</div>
+      <div class="detail-value" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        ${msg.phone ? `
+          <a href="tel:${msg.phone}" class="text-bold" style="color: #2196f3; font-size: 14px;">${msg.phone}</a>
+          <a href="https://wa.me/91${msg.phone}" target="_blank" class="btn btn-success btn-sm" style="padding: 3px 8px; font-size: 11px;">💬 WhatsApp</a>
+          <a href="tel:${msg.phone}" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11px;">📞 Call</a>
+        ` : '<span class="text-muted" style="font-size: 12px;">No phone number provided</span>'}
+        ${msg.email ? `<a href="mailto:${msg.email}?subject=RE: ${encodeURIComponent(msg.subject || 'School Enquiry')}" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11px;">✉️ Email (${escapeHtml(msg.email)})</a>` : ''}
+      </div>
     </div>
-    <div class="detail-view-row">
-      <div class="detail-label">Phone / Mobile</div>
-      <div class="detail-value"><a href="tel:${msg.phone}" style="color: #2196f3;">${msg.phone || 'N/A'}</a></div>
-    </div>
-    <div class="detail-view-row">
-      <div class="detail-label">Date Received</div>
-      <div class="detail-value">${dateStr}</div>
-    </div>
-    <div class="detail-view-row">
+
+    <div class="detail-view-row" style="margin-bottom: 12px;">
       <div class="detail-label">Subject</div>
-      <div class="detail-value text-bold" style="color: var(--primary-navy);">${escapeHtml(msg.subject)}</div>
+      <div class="detail-value text-bold">${escapeHtml(msg.subject)}</div>
     </div>
-    <div class="detail-view-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-      <div class="detail-label">Message Details</div>
-      <div class="detail-value" style="width:100%; padding: 16px; background: var(--bg-light); border-radius: 4px; white-space: pre-wrap;">${escapeHtml(msg.message)}</div>
+
+    <div class="detail-view-row" style="flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 15px;">
+      <div class="detail-label">Message Content</div>
+      <div class="detail-value" style="width:100%; padding: 14px; background: var(--bg-light); border-radius: 4px; white-space: pre-wrap; font-size: 13px;">${escapeHtml(msg.message)}</div>
     </div>
+
+    <div class="detail-view-row" style="align-items: center; gap: 10px; margin-bottom: 20px;">
+      <div class="detail-label">Message Status</div>
+      <div class="detail-value">
+        <select class="filter-select" id="detail-msg-status" onchange="updateSubmissionStatus('message', '${msg.id}', this.value); closeAdminModal();">
+          <option value="new" ${curStatus === 'new' ? 'selected' : ''}>New (Unread)</option>
+          <option value="read" ${curStatus === 'read' ? 'selected' : ''}>Read</option>
+          <option value="replied" ${curStatus === 'replied' ? 'selected' : ''}>Replied</option>
+          <option value="closed" ${curStatus === 'closed' ? 'selected' : ''}>Closed</option>
+        </select>
+      </div>
+    </div>
+
     <div class="form-submit-row">
       <button class="btn btn-danger" onclick="deleteSubmission('message', '${msg.id}'); closeAdminModal();" style="float: left;">🗑️ Delete Message</button>
-      <button class="btn btn-primary" onclick="closeAdminModal()">Close Message</button>
+      <button class="btn btn-primary" onclick="closeAdminModal()">Close Window</button>
     </div>
   `;
 
   openAdminModal();
 
   // If message was unread, automatically mark as read on the backend
-  if (!msg.is_read) {
+  if (!msg.is_read || msg.status === 'new') {
     msg.is_read = true;
+    if (msg.status === 'new') msg.status = 'read';
     updateBadgeCounts();
     renderMessagesTab();
+    renderDashboardOverview();
     
     try {
       await fetch('/api/update-submission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'message', id: id, is_read: true })
+        body: JSON.stringify({ type: 'message', id: id, status: 'read', is_read: true })
       });
     } catch (err) {
       console.error('Failed to update read state on server:', err);
@@ -2439,18 +2846,20 @@ async function openMessageDetailsModal(id) {
 }
 
 async function toggleMessageReadState(id) {
-  const msg = submissionData.messages.find(m => m.id === id);
+  const msg = (submissionData.messages || []).find(m => m.id === id);
   if (!msg) return;
 
   msg.is_read = !msg.is_read;
+  msg.status = msg.is_read ? 'read' : 'new';
   updateBadgeCounts();
   renderMessagesTab();
+  renderDashboardOverview();
 
   try {
     await fetch('/api/update-submission', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'message', id: id, is_read: msg.is_read })
+      body: JSON.stringify({ type: 'message', id: id, status: msg.status, is_read: msg.is_read })
     });
   } catch (err) {
     console.error('Failed to toggle read status:', err);
@@ -2468,12 +2877,20 @@ async function updateSubmissionStatus(type, id, newStatus) {
     const data = await res.json();
     if (data.success) {
       if (type === 'enquiry') {
-        const item = submissionData.enquiries.find(e => e.id === id);
+        const item = (submissionData.enquiries || []).find(e => e.id === id);
         if (item) item.status = newStatus;
         renderEnquiriesTab();
+      } else {
+        const item = (submissionData.messages || []).find(m => m.id === id);
+        if (item) {
+          item.status = newStatus;
+          item.is_read = (newStatus !== 'new');
+        }
+        renderMessagesTab();
       }
       updateBadgeCounts();
-      showToast('Submission status updated successfully!', 'success');
+      renderDashboardOverview();
+      showToast('Status updated successfully!', 'success');
     } else {
       showToast('Failed to update status.', 'error');
     }

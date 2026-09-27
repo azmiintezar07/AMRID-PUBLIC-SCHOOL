@@ -6,6 +6,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let websiteData = null;
 
+  // 0. LIGHT / DARK THEME SYSTEM
+  function initThemeToggle() {
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      try {
+        localStorage.setItem('aps_theme', theme);
+      } catch (e) {}
+    }
+
+    const toggleBtns = document.querySelectorAll('.theme-toggle-btn');
+    toggleBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(nextTheme);
+      });
+    });
+
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem('aps_theme')) {
+          setTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+    }
+  }
+
+  initThemeToggle();
+
   // 1. MOBILE DRAWER NAVIGATION MENU
   const hamburgerToggle = document.getElementById('hamburger-toggle');
   const mobileDrawer = document.getElementById('mobile-drawer');
@@ -362,39 +392,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4.3C Faculty & Staff
     renderFaculty(data.faculty_staff || []);
 
-    // 4.4 Why Choose Us / Facilities Pillars
-    const whyChooseContainer = document.getElementById('why-choose-grid-container');
-    if (whyChooseContainer && data.facilities) {
-      whyChooseContainer.innerHTML = '';
-      
-      const svgMap = {
-        'teachers': `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>`,
-        'heart': `<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>`,
-        'book': `<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>`,
-        'camera': `<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle>`,
-        'lock': `<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>`,
-        'check-circle': `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>`,
-        'shield': `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>`,
-        'dollar-sign': `<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>`
-      };
+    // 4.4 Why Choose Us & Facilities
+    // Preserve Section 4's 8 distinct excellence pillars (do not overwrite with facilities)
+    if (data.why_choose && Array.isArray(data.why_choose)) {
+      const whyChooseContainer = document.getElementById('why-choose-grid-container');
+      if (whyChooseContainer) {
+        whyChooseContainer.innerHTML = '';
+        data.why_choose.forEach(fac => {
+          const div = document.createElement('div');
+          div.className = 'why-card';
+          div.innerHTML = `
+            <div class="why-icon">${fac.icon || '🌟'}</div>
+            <h3 class="why-title">${escapeHtml(fac.title)}</h3>
+            <p class="why-text">${escapeHtml(fac.description)}</p>
+          `;
+          whyChooseContainer.appendChild(div);
+        });
+      }
+    }
 
-      data.facilities.forEach(fac => {
-        const div = document.createElement('div');
-        div.className = 'why-card';
-        
-        const pathMarkup = svgMap[fac.svg_id] || svgMap['check-circle'];
-
-        div.innerHTML = `
-          <div class="why-icon">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
-              ${pathMarkup}
-            </svg>
-          </div>
-          <h3 class="why-title">${escapeHtml(fac.title)}</h3>
-          <p class="why-text">${escapeHtml(fac.description)}</p>
-        `;
-        whyChooseContainer.appendChild(div);
-      });
+    // Update School Timings in footer if provided
+    if (data.contact_settings?.school_timings || data.school_info?.school_timings) {
+      const timings = data.contact_settings?.school_timings || data.school_info?.school_timings;
+      const timingsEl = document.getElementById('footer-timings-val');
+      if (timingsEl && timings) {
+        timingsEl.innerHTML = escapeHtml(timings).replace(/\n/g, '<br>');
+      }
     }
 
     // 4.5 Hostel Section
@@ -581,26 +604,55 @@ document.addEventListener('DOMContentLoaded', () => {
     bindNoticeFilters();
   }
 
-  // Events list rendering
+  // Events list rendering (with Upcoming vs Past separation)
+  let activeEventFilter = 'upcoming'; // 'upcoming' | 'past' | 'all'
+  let cachedEvents = [];
+
   function renderEvents(events) {
+    if (events) {
+      cachedEvents = events;
+    }
     const container = document.getElementById('events-grid-container');
     if (!container) return;
 
     container.innerHTML = '';
-    const published = events.filter(e => e.is_published !== false);
+    const published = (cachedEvents || []).filter(e => e.is_published !== false);
 
-    if (published.length === 0) {
-      container.innerHTML = '<p class="empty-list-text" style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 40px 0;">No upcoming events at this time.</p>';
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const filtered = published.filter(ev => {
+      const evDate = new Date(ev.date);
+      evDate.setHours(0, 0, 0, 0);
+      const isPast = ev.status === 'past' || (ev.status !== 'upcoming' && evDate < now);
+
+      if (activeEventFilter === 'upcoming') {
+        return !isPast;
+      } else if (activeEventFilter === 'past') {
+        return isPast;
+      }
+      return true; // 'all'
+    });
+
+    if (filtered.length === 0) {
+      const msg = activeEventFilter === 'upcoming' 
+        ? 'No upcoming events scheduled at this time. Check back soon or view our Past Events archive!' 
+        : activeEventFilter === 'past'
+        ? 'No archived past events to show.'
+        : 'No events published at this time.';
+      container.innerHTML = `<p class="empty-list-text" style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 40px 0;">${msg}</p>`;
+      bindEventTabs();
       return;
     }
 
-    published.forEach(ev => {
+    filtered.forEach(ev => {
       const card = document.createElement('div');
       card.className = 'event-card';
 
-      // Date parsing for display
-      const eventDate = new Date(ev.date);
-      const displayDateStr = eventDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+      const evDate = new Date(ev.date);
+      evDate.setHours(0, 0, 0, 0);
+      const isPast = ev.status === 'past' || (ev.status !== 'upcoming' && evDate < now);
+      const displayDateStr = new Date(ev.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 
       card.innerHTML = `
         <div class="event-card-img-wrapper">
@@ -614,7 +666,12 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="event-date-badge">${displayDateStr}</div>
         </div>
         <div class="event-card-content">
-          <h3 class="event-card-title">${escapeHtml(ev.title)}</h3>
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+            <h3 class="event-card-title" style="margin-bottom: 0;">${escapeHtml(ev.title)}</h3>
+            <span class="event-status-tag ${isPast ? 'event-status-past' : 'event-status-upcoming'}">
+              ${isPast ? 'Past Event' : 'Upcoming'}
+            </span>
+          </div>
           <p class="event-card-desc">${escapeHtml(ev.description)}</p>
           <div class="event-card-meta">
             <div class="meta-item">
@@ -630,6 +687,20 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       container.appendChild(card);
+    });
+
+    bindEventTabs();
+  }
+
+  function bindEventTabs() {
+    const tabs = document.querySelectorAll('.event-tab');
+    tabs.forEach(tab => {
+      tab.onclick = () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeEventFilter = tab.getAttribute('data-event-type') || 'all';
+        renderEvents();
+      };
     });
   }
 
@@ -1082,17 +1153,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Prepare payload
+      const emailInput = document.getElementById('enquiry-email');
       const payload = {
         parentName: parentNameInput.value.trim(),
         studentName: studentNameInput.value.trim(),
         phoneNumber: phoneInput.value.trim(),
+        email: emailInput ? emailInput.value.trim() : '',
         classApply: classSelect.value,
         message: document.getElementById('message').value.trim()
       };
 
       // Set loader/disabled states
+      const submitBtn = enquiryForm.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn ? submitBtn.textContent : 'Submit';
+      if (submitBtn) submitBtn.textContent = 'Submitting Enquiry...';
+
       errorBanner.style.display = 'none';
-      enquiryForm.style.opacity = '0.3';
+      enquiryForm.style.opacity = '0.4';
       const elements = enquiryForm.elements;
       for (let i = 0; i < elements.length; i++) elements[i].disabled = true;
 
@@ -1116,6 +1193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Re-enable form fields
         enquiryForm.style.opacity = '1';
+        if (submitBtn) submitBtn.textContent = originalBtnText;
         for (let i = 0; i < elements.length; i++) elements[i].disabled = false;
         
         errorBanner.querySelector('p').textContent = err.message || 'There was a connection issue. Please try again.';
@@ -1162,8 +1240,12 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       // Set loader/disabled states
+      const contactSubmitBtn = contactForm.querySelector('button[type="submit"]');
+      const originalContactBtnText = contactSubmitBtn ? contactSubmitBtn.textContent : 'Send';
+      if (contactSubmitBtn) contactSubmitBtn.textContent = 'Sending Message...';
+
       contactErrorBanner.style.display = 'none';
-      contactForm.style.opacity = '0.3';
+      contactForm.style.opacity = '0.4';
       const elements = contactForm.elements;
       for (let i = 0; i < elements.length; i++) elements[i].disabled = true;
 
@@ -1187,6 +1269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Re-enable form fields
         contactForm.style.opacity = '1';
+        if (contactSubmitBtn) contactSubmitBtn.textContent = originalContactBtnText;
         for (let i = 0; i < elements.length; i++) elements[i].disabled = false;
         
         contactErrorBanner.querySelector('p').textContent = err.message || 'There was a connection issue. Please try again.';

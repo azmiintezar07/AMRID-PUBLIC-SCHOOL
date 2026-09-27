@@ -5,6 +5,7 @@ import multer from 'multer';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { fileURLToPath } from 'url';
+import { dispatchEnquiryNotifications } from './notification-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,18 +14,54 @@ const router = express.Router();
 
 // Helper to find files in project directories (handles both dev source and prod dist folder)
 const resolveFilePath = (filename) => {
-  // If public/ exists (dev mode), write there
   const devPath = path.resolve(__dirname, filename);
   if (fs.existsSync(path.dirname(devPath))) {
     return devPath;
   }
-  // Fallback to current dir or dist relative path
   return path.resolve(__dirname, filename.replace(/^public\//, 'dist/'));
 };
 
 const CONTENT_FILE = resolveFilePath('public/data/content.json');
 const SUBMISSIONS_FILE = resolveFilePath('public/data/submissions.json');
 const CONFIG_FILE = path.resolve(__dirname, 'admin-config.json');
+
+// In-memory rate limiting map: { ip: [timestamps] }
+const rateLimitStore = new Map();
+
+function rateLimiter(limit, windowMs, message) {
+  return (req, res, next) => {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+    const now = Date.now();
+    const timestamps = rateLimitStore.get(ip) || [];
+
+    // Filter timestamps within window
+    const recent = timestamps.filter(t => now - t < windowMs);
+
+    if (recent.length >= limit) {
+      return res.status(429).json({
+        success: false,
+        message: message || 'Too many requests. Please try again later.'
+      });
+    }
+
+    recent.push(now);
+    rateLimitStore.set(ip, recent);
+    next();
+  };
+}
+
+// Clean old rate limit entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, timestamps] of rateLimitStore.entries()) {
+    const valid = timestamps.filter(t => now - t < 3600000);
+    if (valid.length === 0) {
+      rateLimitStore.delete(ip);
+    } else {
+      rateLimitStore.set(ip, valid);
+    }
+  }
+}, 600000);
 
 // Helper to save JSON databases to both public/ and dist/ to ensure sync
 const writeDatabase = (filename, data) => {
@@ -49,25 +86,31 @@ const writeDatabase = (filename, data) => {
   }
 };
 
-// Read config
+// Read config with environment variable overrides
 const getConfig = () => {
-  try {
-    if (fs.existsSync(CONFIG_FILE)) {
-      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
-    }
-  } catch (err) {
-    console.error('Error reading admin config:', err);
-  }
-  // Default values if file doesn't exist
-  return {
+  let configData = {
     username: 'Azmi',
     passwordHash: '$2b$10$Ax/mDEHyNZebu238qTI49.IDydv.MdIParIe05MoeJL6Qchsv/sCW', // azmi@12345
     jwtSecret: 'amrid_public_school_super_secret_session_key_2026'
   };
+
+  try {
+    if (fs.existsSync(CONFIG_FILE)) {
+      configData = { ...configData, ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8')) };
+    }
+  } catch (err) {
+    console.error('Error reading admin config:', err);
+  }
+
+  // Allow environment variables to securely override file config
+  return {
+    username: process.env.ADMIN_USERNAME || configData.username,
+    passwordHash: process.env.ADMIN_PASSWORD_HASH || configData.passwordHash,
+    jwtSecret: process.env.JWT_SECRET || configData.jwtSecret
+  };
 };
 
 const config = getConfig();
-
 
 // Middleware to authenticate JWT token from Cookies or Authorization header
 const authenticateToken = (req, res, next) => {
@@ -90,7 +133,6 @@ const authenticateToken = (req, res, next) => {
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = resolveFilePath('public/uploads/');
-    // Ensure upload dir exists
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -104,12 +146,12 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedExts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm'];
+  const allowedExts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm', '.pdf'];
   const ext = path.extname(file.originalname).toLowerCase();
   if (allowedExts.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only images and videos are allowed.'), false);
+    cb(new Error('Invalid file type. Only images, videos and PDF documents are allowed.'), false);
   }
 };
 
@@ -119,41 +161,42 @@ const upload = multer({
   limits: { fileSize: 25 * 1024 * 1024 } // 25 MB limit
 });
 
-// 1. ADMIN LOGIN
-router.post('/login', (req, res) => {
+// 1. ADMIN LOGIN (with Rate Limiting: 15 attempts per 15 minutes)
+router.post('/login', rateLimiter(15, 15 * 60 * 1000, 'Too many login attempts. Please wait 15 minutes.'), (req, res) => {
   const username = (req.body.username || '').trim();
   const password = (req.body.password || '').trim();
 
   console.log(`[AUTH] Login attempt received. Username: "${username}"`);
 
   if (!username || !password) {
-    console.log('[AUTH] Rejecting: Missing username or password.');
     return res.status(400).json({ success: false, message: 'Please provide both username and password.' });
   }
 
   if (username.toLowerCase() !== config.username.toLowerCase()) {
-    console.log(`[AUTH] Rejecting: Username mismatch. Got "${username}", expected "${config.username}"`);
     return res.status(401).json({ success: false, message: 'Invalid username or password.' });
   }
 
   const passValid = bcrypt.compareSync(password, config.passwordHash);
-  console.log(`[AUTH] Password comparison result: ${passValid}`);
 
   if (!passValid) {
     return res.status(401).json({ success: false, message: 'Invalid username or password.' });
   }
+
+  // Clear rate limit for this IP on successful login
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+  rateLimitStore.delete(ip);
 
   const token = jwt.sign({ username: config.username }, config.jwtSecret, { expiresIn: '1d' });
 
   // Set HTTP-only Cookie
   res.cookie('token', token, {
     httpOnly: true,
-    secure: false,
+    secure: false, // Set to true if running strictly on HTTPS
     sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   });
 
-  res.json({ success: true, token, username });
+  res.json({ success: true, token, username: config.username });
 });
 
 // 2. ADMIN LOGOUT
@@ -186,7 +229,7 @@ router.post('/save-content', authenticateToken, (req, res) => {
   try {
     const data = req.body;
     
-    // Save dynamically to public and/or dist
+    // Save dynamically to public and dist
     writeDatabase(CONTENT_FILE, data);
 
     res.json({ success: true, message: 'Content updated successfully.' });
@@ -271,7 +314,7 @@ router.get('/media', authenticateToken, (req, res) => {
 router.delete('/media/:name', authenticateToken, (req, res) => {
   try {
     const filename = req.params.name;
-    // Basic path traversal protection
+    // Path traversal protection
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
       return res.status(400).json({ success: false, message: 'Invalid file name.' });
     }
@@ -312,48 +355,121 @@ router.get('/submissions', authenticateToken, (req, res) => {
 });
 
 // 10. PUBLIC SUBMISSION: ADMISSION ENQUIRY
-router.post('/enquiry', (req, res) => {
+// Rate limit: max 10 per hour per IP. Includes duplicate check and async WhatsApp/SMS notifications.
+router.post('/enquiry', rateLimiter(10, 60 * 60 * 1000, 'Too many enquiry requests. Please try again later.'), (req, res) => {
   try {
-    const { parentName, studentName, phoneNumber, classApply, message } = req.body;
+    const { parentName, studentName, phoneNumber, classApply, email, message } = req.body;
 
     if (!parentName || !studentName || !phoneNumber || !classApply) {
       return res.status(400).json({ success: false, message: 'Required fields are missing.' });
     }
 
     // Strictly validate 10 digit phone
-    if (!/^[0-9]{10}$/.test(phoneNumber.trim())) {
-      return res.status(400).json({ success: false, message: 'Invalid 10-digit phone number.' });
+    const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
+    if (!/^[0-9]{10}$/.test(cleanPhone)) {
+      return res.status(400).json({ success: false, message: 'Invalid 10-digit phone number. Please enter a 10-digit mobile number.' });
     }
 
     // Read submissions
     let submissions = { enquiries: [], messages: [] };
     if (fs.existsSync(SUBMISSIONS_FILE)) {
       submissions = JSON.parse(fs.readFileSync(SUBMISSIONS_FILE, 'utf-8'));
+      submissions.enquiries = submissions.enquiries || [];
+      submissions.messages = submissions.messages || [];
+    }
+
+    // DUPLICATE CHECK: Check if an identical submission (same phone & student) was received in the last 3 minutes
+    const nowMs = Date.now();
+    const isDuplicate = submissions.enquiries.some(e => {
+      if (e.phone === cleanPhone && e.student_name.toLowerCase() === studentName.trim().toLowerCase()) {
+        const enqTime = new Date(e.date).getTime();
+        return (nowMs - enqTime) < (3 * 60 * 1000); // 3 minutes window
+      }
+      return false;
+    });
+
+    if (isDuplicate) {
+      return res.json({
+        success: true,
+        message: 'Your admission enquiry has already been received! Our admissions desk will contact you shortly.',
+        duplicate_prevented: true
+      });
     }
 
     const newEnquiry = {
-      id: 'enq-' + Date.now(),
+      id: 'enq-' + nowMs,
       parent_name: parentName.trim(),
       student_name: studentName.trim(),
-      phone: phoneNumber.trim(),
+      phone: cleanPhone,
+      email: (email || '').trim(),
       class_apply: classApply,
       message: (message || '').trim(),
-      status: 'new', // new | contacted | follow-up | completed
-      date: new Date().toISOString()
+      status: 'new', // new | contacted | follow-up | converted | closed
+      date: new Date().toISOString(),
+      follow_up_date: null,
+      notes: [],
+      history: [
+        {
+          action: 'created',
+          status: 'new',
+          note: 'Enquiry submitted via website form',
+          date: new Date().toISOString()
+        }
+      ],
+      notification_status: {
+        whatsapp: { director: { status: 'queued' }, principal: { status: 'queued' } },
+        sms: { director: { status: 'queued' }, principal: { status: 'queued' } }
+      }
     };
 
     submissions.enquiries.unshift(newEnquiry); // newest first
-
     writeDatabase(SUBMISSIONS_FILE, submissions);
 
-    res.json({ success: true, message: 'Enquiry submitted successfully.' });
+    // Read contact settings for default admin phone numbers if present
+    let defaultContacts = {};
+    try {
+      if (fs.existsSync(CONTENT_FILE)) {
+        const contentData = JSON.parse(fs.readFileSync(CONTENT_FILE, 'utf-8'));
+        defaultContacts = {
+          directorPhone: contentData.contact_settings?.director_phone || contentData.director_info?.phone,
+          principalPhone: contentData.contact_settings?.principal_phone || contentData.principal_info?.phone
+        };
+      }
+    } catch {}
+
+    // Send WhatsApp & SMS notifications asynchronously without blocking user response
+    dispatchEnquiryNotifications(newEnquiry, defaultContacts)
+      .then(report => {
+        // Update notification status safely in database
+        try {
+          if (fs.existsSync(SUBMISSIONS_FILE)) {
+            const currentSubmissions = JSON.parse(fs.readFileSync(SUBMISSIONS_FILE, 'utf-8'));
+            const target = currentSubmissions.enquiries.find(e => e.id === newEnquiry.id);
+            if (target) {
+              target.notification_status = report;
+              writeDatabase(SUBMISSIONS_FILE, currentSubmissions);
+            }
+          }
+        } catch (dbErr) {
+          console.error('[NOTIFY] Error saving notification status report:', dbErr);
+        }
+      })
+      .catch(notifyErr => {
+        console.error('[NOTIFY] Unhandled notification dispatch error:', notifyErr);
+      });
+
+    res.json({
+      success: true,
+      message: 'Enquiry submitted successfully. Our admissions desk will call you shortly on your provided phone number.'
+    });
   } catch (err) {
+    console.error('Server error processing enquiry:', err);
     res.status(500).json({ success: false, message: 'Server error processing enquiry.' });
   }
 });
 
 // 11. PUBLIC SUBMISSION: CONTACT MESSAGE
-router.post('/contact', (req, res) => {
+router.post('/contact', rateLimiter(10, 60 * 60 * 1000, 'Too many messages sent. Please wait before trying again.'), (req, res) => {
   try {
     const { name, email, phone, subject, message } = req.body;
 
@@ -364,21 +480,41 @@ router.post('/contact', (req, res) => {
     let submissions = { enquiries: [], messages: [] };
     if (fs.existsSync(SUBMISSIONS_FILE)) {
       submissions = JSON.parse(fs.readFileSync(SUBMISSIONS_FILE, 'utf-8'));
+      submissions.enquiries = submissions.enquiries || [];
+      submissions.messages = submissions.messages || [];
+    }
+
+    // Duplicate check for accidental clicks within 2 minutes
+    const nowMs = Date.now();
+    const isDuplicate = submissions.messages.some(m => {
+      if (m.name.toLowerCase() === name.trim().toLowerCase() && m.message === message.trim()) {
+        const msgTime = new Date(m.date).getTime();
+        return (nowMs - msgTime) < (2 * 60 * 1000);
+      }
+      return false;
+    });
+
+    if (isDuplicate) {
+      return res.json({
+        success: true,
+        message: 'Your message has already been received! We will respond shortly.',
+        duplicate_prevented: true
+      });
     }
 
     const newMsg = {
-      id: 'msg-' + Date.now(),
+      id: 'msg-' + nowMs,
       name: name.trim(),
       email: (email || '').trim(),
       phone: (phone || '').trim(),
       subject: (subject || 'General Inquiry').trim(),
       message: message.trim(),
       is_read: false,
+      status: 'new', // new | read | replied | closed
       date: new Date().toISOString()
     };
 
     submissions.messages.unshift(newMsg); // newest first
-
     writeDatabase(SUBMISSIONS_FILE, submissions);
 
     res.json({ success: true, message: 'Message sent successfully.' });
@@ -390,39 +526,142 @@ router.post('/contact', (req, res) => {
 // 12. UPDATE SUBMISSION STATUS / READ STATE
 router.post('/update-submission', authenticateToken, (req, res) => {
   try {
-    const { type, id, status, is_read } = req.body;
+    const { type, id, status, is_read, follow_up_date } = req.body;
 
     if (!type || !id || (type !== 'enquiry' && type !== 'message')) {
       return res.status(400).json({ success: false, message: 'Invalid params.' });
     }
 
     if (!fs.existsSync(SUBMISSIONS_FILE)) {
-      return res.status(444).json({ success: false, message: 'No submissions found.' });
+      return res.status(404).json({ success: false, message: 'No submissions found.' });
     }
 
     const submissions = JSON.parse(fs.readFileSync(SUBMISSIONS_FILE, 'utf-8'));
 
     if (type === 'enquiry') {
       const item = submissions.enquiries.find(e => e.id === id);
-      if (item && status) {
-        item.status = status;
+      if (!item) {
+        return res.status(404).json({ success: false, message: 'Enquiry not found.' });
+      }
+
+      // Normalise status (support 'completed' as alias for 'converted')
+      let normalizedStatus = status;
+      if (status === 'completed') normalizedStatus = 'converted';
+
+      if (normalizedStatus && item.status !== normalizedStatus) {
+        const oldStatus = item.status;
+        item.status = normalizedStatus;
+        item.history = item.history || [];
+        item.history.push({
+          action: 'status_change',
+          from: oldStatus,
+          to: normalizedStatus,
+          date: new Date().toISOString(),
+          by: req.user?.username || 'Admin'
+        });
+      }
+
+      if (follow_up_date !== undefined) {
+        item.follow_up_date = follow_up_date;
       }
     } else {
       const item = submissions.messages.find(m => m.id === id);
-      if (item) {
-        item.is_read = is_read !== undefined ? is_read : true;
+      if (!item) {
+        return res.status(404).json({ success: false, message: 'Message not found.' });
+      }
+
+      if (status) {
+        item.status = status;
+        item.is_read = (status !== 'new');
+      } else if (is_read !== undefined) {
+        item.is_read = is_read;
+        if (!is_read && item.status === 'read') {
+          item.status = 'new';
+        } else if (is_read && item.status === 'new') {
+          item.status = 'read';
+        }
       }
     }
 
     writeDatabase(SUBMISSIONS_FILE, submissions);
-
     res.json({ success: true, message: 'Submission updated.' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error updating submission.' });
   }
 });
 
-// 13. DELETE SUBMISSION
+// 13. ADD FOLLOW-UP NOTE / UPDATE FOLLOW-UP DATE FOR ENQUIRY
+router.post('/enquiry-note', authenticateToken, (req, res) => {
+  try {
+    const { id, noteText, followUpDate, status } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'Enquiry ID is required.' });
+    }
+
+    if (!fs.existsSync(SUBMISSIONS_FILE)) {
+      return res.status(404).json({ success: false, message: 'No submissions found.' });
+    }
+
+    const submissions = JSON.parse(fs.readFileSync(SUBMISSIONS_FILE, 'utf-8'));
+    const item = submissions.enquiries.find(e => e.id === id);
+
+    if (!item) {
+      return res.status(404).json({ success: false, message: 'Enquiry not found.' });
+    }
+
+    item.notes = item.notes || [];
+    item.history = item.history || [];
+
+    const now = new Date().toISOString();
+    const adminUser = req.user?.username || 'Admin';
+
+    if (noteText && noteText.trim()) {
+      const newNote = {
+        text: noteText.trim(),
+        author: adminUser,
+        date: now
+      };
+      item.notes.push(newNote);
+      item.history.push({
+        action: 'note_added',
+        note: noteText.trim(),
+        by: adminUser,
+        date: now
+      });
+    }
+
+    if (followUpDate !== undefined) {
+      item.follow_up_date = followUpDate;
+      item.history.push({
+        action: 'follow_up_date_set',
+        date_set: followUpDate,
+        by: adminUser,
+        date: now
+      });
+    }
+
+    if (status && item.status !== status) {
+      const oldStatus = item.status;
+      item.status = status;
+      item.history.push({
+        action: 'status_change',
+        from: oldStatus,
+        to: status,
+        by: adminUser,
+        date: now
+      });
+    }
+
+    writeDatabase(SUBMISSIONS_FILE, submissions);
+    res.json({ success: true, message: 'Follow-up saved successfully.', enquiry: item });
+  } catch (err) {
+    console.error('Error adding enquiry note:', err);
+    res.status(500).json({ success: false, message: 'Error adding enquiry note.' });
+  }
+});
+
+// 14. DELETE SUBMISSION
 router.delete('/submission', authenticateToken, (req, res) => {
   try {
     const { type, id } = req.body;

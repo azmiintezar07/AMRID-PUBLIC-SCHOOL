@@ -1,6 +1,58 @@
 {
   "enquiries": [
     {
+      "id": "enq-1790509730172",
+      "parent_name": "azmi",
+      "student_name": "intezar",
+      "phone": "8734479213",
+      "email": "",
+      "class_apply": "nursery",
+      "message": "admission",
+      "status": "new",
+      "date": "2026-09-27T11:48:50.172Z",
+      "follow_up_date": null,
+      "notes": [],
+      "history": [
+        {
+          "action": "created",
+          "status": "new",
+          "note": "Enquiry submitted via website form",
+          "date": "2026-09-27T11:48:50.172Z"
+        }
+      ],
+      "notification_status": {
+        "timestamp": "2026-09-27T11:48:50.173Z",
+        "whatsapp": {
+          "director": {
+            "success": false,
+            "status": "skipped_no_config",
+            "message": "No WhatsApp API credentials configured in environment variables",
+            "timestamp": "2026-09-27T11:48:50.173Z"
+          },
+          "principal": {
+            "success": false,
+            "status": "skipped_no_config",
+            "message": "No WhatsApp API credentials configured in environment variables",
+            "timestamp": "2026-09-27T11:48:50.173Z"
+          }
+        },
+        "sms": {
+          "director": {
+            "success": false,
+            "status": "skipped_no_config",
+            "message": "No SMS API credentials configured in environment variables",
+            "timestamp": "2026-09-27T11:48:50.173Z"
+          },
+          "principal": {
+            "success": false,
+            "status": "skipped_no_config",
+            "message": "No SMS API credentials configured in environment variables",
+            "timestamp": "2026-09-27T11:48:50.173Z"
+          }
+        }
+      }
+    },
+    {
       "id": "enq-1790433787020",
       "parent_name": "intezar",
       "student_name": "azmi",
@@ -32,6 +84,17 @@
     }
   ],
   "messages": [
+    {
+      "id": "msg-1790509774556",
+      "name": "azmi",
+      "email": "",
+      "phone": "8475438294",
+      "subject": "urdu",
+      "message": "admission",
+      "is_read": false,
+      "status": "new",
+      "date": "2026-09-27T11:49:34.556Z"
+    },
     {
       "id": "msg-1790442588550",
       "name": "intezar azmi",
