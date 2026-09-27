@@ -14,7 +14,7 @@
     "name": "Md Danish Raza",
     "designation": "Director",
     "school_title": "AMRID Public School",
-    "phone": "+91 9905430743",
+    "phone": "+91 8434149789",
     "message": "We established AMRID PUBLIC SCHOOL with a steadfast vision: to provide premier, value-grounded, and accessible education to families across Bihar. Our philosophy extends beyond standard rote examinations; we focus intensively on moral character, leadership qualities, trilingual mastery, and daily self-discipline. We are profoundly thankful to our parent community for their unwavering faith, which fuels our continuous pursuit of excellence.",
     "photo_url": "/uploads/media-1787203605977-226500123.jpeg"
   },
@@ -24,7 +24,7 @@
     "school_title": "AMRID Public School",
     "phone": "+91 9693264161",
     "message": "True academic excellence emerges when educators, students, and parents collaborate with shared purpose. At AMRID PUBLIC SCHOOL, our compassionate faculty nurtures every child's innate potential from their early nursery years through Class VIII. By intertwining rigorous modern curricula with foundational moral teachings, we prepare confident, disciplined young learners equipped to succeed in higher education and life.",
-    "photo_url": "/uploads/principal-portrait.jpg"
+    "photo_url": "/uploads/media-1790433488450-133745418.jpeg"
   },
   "hero_section": {
     "badge": "Admissions Open 2026–27",
@@ -34,24 +34,24 @@
     "button1_text": "Apply for Admission",
     "button2_text": "Explore Our School",
     "button3_text": "Contact Us",
-    "image_url": "/uploads/hero-campus.jpg"
+    "image_url": "/uploads/media-1790433349372-223620042.jpeg"
   },
   "social_media": {
     "instagram": "https://instagram.com/a.p.s.",
     "facebook": "https://facebook.com/amridpublicschool",
     "youtube": "https://youtube.com/@amridpublicschool",
-    "whatsapp": "9905430742"
+    "whatsapp": "8434149789"
   },
   "contact_settings": {
     "address": "Fatma Nagar, mandel, Baisi, Purnia, Bihar",
     "coordinates": "25.85635° N, 87.76090° E",
     "google_maps_embed": "https://maps.google.com/maps?q=25.85635,87.76090&z=15&output=embed",
     "google_maps_directions": "https://www.google.com/maps/dir/?api=1&destination=25.85635,87.76090",
-    "phone": "+91 9905430742",
+    "phone": "+91 8434149789",
     "director_phone": "+91 9905430743",
     "principal_phone": "+91 9693264161",
     "email": "info@amridpublicschool.com",
-    "whatsapp": "9905430742"
+    "whatsapp": "8434149789"
   },
   "facilities": [
     {
@@ -108,7 +108,7 @@
       "experience": "10+ Years",
       "photo_url": "/uploads/media-1787203605977-226500123.jpeg",
       "bio": "Guiding institutional growth, educational policies, infrastructure advancement, and student-centric community development at AMRID Public School.",
-      "order": 1,
+      "order": 3,
       "is_active": true
     },
     {
@@ -121,32 +121,6 @@
       "experience": "12+ Years",
       "photo_url": "/uploads/principal-portrait.jpg",
       "bio": "Steering pedagogy, faculty mentorship, curriculum enrichment, and holistic child development from Nursery foundation to Class VIII.",
-      "order": 2,
-      "is_active": true
-    },
-    {
-      "id": "staff-teach-1",
-      "name": "Faculty Member (Editable in Admin)",
-      "designation": "Mathematics Teacher",
-      "category": "teaching",
-      "subject": "Mathematics",
-      "qualification": "M.Sc. Mathematics, B.Ed.",
-      "experience": "6+ Years",
-      "photo_url": "",
-      "bio": "Specializes in developing arithmetic logic, problem-solving skills, and building student confidence in mathematical concepts.",
-      "order": 3,
-      "is_active": true
-    },
-    {
-      "id": "staff-teach-2",
-      "name": "Faculty Member (Editable in Admin)",
-      "designation": "Senior Urdu & Islamic Studies Faculty",
-      "category": "teaching",
-      "subject": "Urdu & Islamic Education",
-      "qualification": "M.A. Urdu, Fazil, B.Ed.",
-      "experience": "8+ Years",
-      "photo_url": "",
-      "bio": "Dedicated to linguistic proficiency, moral guidance, Quranic recitation fundamentals, and ethical character building.",
       "order": 4,
       "is_active": true
     },
@@ -255,20 +229,21 @@
       "time": "08:00 AM",
       "location": "School Assembly Ground",
       "image_url": "/uploads/media-1786800299423-540631780.jpeg",
-      "is_published": true
+      "is_published": false
     }
   ],
   "gallery": [
     {
       "id": "gal-1",
       "type": "image",
-      "category": "campus",
-      "url": "/uploads/hero-campus.jpg",
+      "category": "classroom",
+      "url": "/uploads/media-1790433349372-223620042.jpeg",
       "title": "Main Campus Building",
       "description": "Front facade of AMRID Public School campus with lush lawns and arched architecture.",
       "is_featured": true,
       "order": 1,
-      "is_published": true
+      "is_published": true,
+      "thumbnail_url": ""
     },
     {
       "id": "gal-2",
@@ -301,7 +276,7 @@
       "description": "Students actively participating in annual activities and school assemblies.",
       "is_featured": true,
       "order": 4,
-      "is_published": true
+      "is_published": false
     }
   ]
 }
