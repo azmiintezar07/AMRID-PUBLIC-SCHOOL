@@ -87,6 +87,7 @@ html {
   scroll-behavior: smooth;
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -435,8 +436,9 @@ ul, ol {
 .mobile-drawer {
   position: fixed;
   top: 0;
-  right: -320px;
+  right: 0;
   width: 300px;
+  max-width: 85vw;
   height: 100vh;
   background-color: var(--primary-navy);
   color: var(--white);
@@ -444,11 +446,14 @@ ul, ol {
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
-  transition: var(--transition-slow);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform var(--transition-slow), visibility var(--transition-slow);
 }
 
 .mobile-drawer.open {
-  right: 0;
+  transform: translateX(0);
+  visibility: visible;
 }
 
 .drawer-header {
@@ -2014,7 +2019,7 @@ ul, ol {
 
 .instagram-link-banner {
   background: linear-gradient(135deg, var(--secondary-blue) 0%, var(--primary-navy) 100%);
-  color: var(--white);
+  color: #ffffff;
   padding: 32px 40px;
   border-radius: var(--radius-md);
   margin-bottom: 56px;
@@ -2042,6 +2047,7 @@ ul, ol {
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 4px;
+  color: #ffffff;
 }
 
 .insta-info p {
@@ -3831,27 +3837,27 @@ body, header, .site-header, .facility-card, .leader-card, .event-card,
 }
 
 [data-theme="dark"] .pill-leadership {
-  background-color: rgba(226, 186, 109, 0.15) !important;
-  color: #fbbf24 !important;
-  border-color: rgba(226, 186, 109, 0.35) !important;
+  background-color: rgba(226, 186, 109, 0.2) !important;
+  color: #fde047 !important;
+  border-color: rgba(226, 186, 109, 0.4) !important;
 }
 
 [data-theme="dark"] .pill-teaching {
-  background-color: rgba(59, 130, 246, 0.15) !important;
-  color: #60a5fa !important;
-  border-color: rgba(59, 130, 246, 0.35) !important;
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  color: #93c5fd !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
 }
 
 [data-theme="dark"] .pill-admin {
-  background-color: rgba(168, 85, 247, 0.15) !important;
-  color: #c084fc !important;
-  border-color: rgba(168, 85, 247, 0.35) !important;
+  background-color: rgba(168, 85, 247, 0.2) !important;
+  color: #d8b4fe !important;
+  border-color: rgba(168, 85, 247, 0.4) !important;
 }
 
 [data-theme="dark"] .pill-support {
-  background-color: rgba(148, 163, 184, 0.15) !important;
-  color: #94a3b8 !important;
-  border-color: rgba(148, 163, 184, 0.35) !important;
+  background-color: rgba(148, 163, 184, 0.2) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.4) !important;
 }
 
 [data-theme="dark"] .staff-badge {
@@ -3927,6 +3933,10 @@ body, header, .site-header, .facility-card, .leader-card, .event-card,
 
 [data-theme="dark"] label span {
   color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .required {
+  color: #f87171 !important;
 }
 
 [data-theme="dark"] input[type="text"],

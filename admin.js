@@ -433,6 +433,11 @@ function bindGlobalEvents() {
   });
 }
 
+function bindModalMediaSelect() {
+  // Safe helper: modal media triggers are handled by the document click listener
+}
+window.bindModalMediaSelect = bindModalMediaSelect;
+
 function togglePasswordVisibility() {
   const pwdInput = document.getElementById('login-password');
   const btn = document.getElementById('toggle-password-btn');
@@ -646,6 +651,7 @@ function switchTab(tabId) {
     'notices': 'School Notice Board Manager',
     'events': 'Events & Assemblies Scheduler',
     'hostel-facilities': 'Hostel & Facilities Settings',
+    'faculty': 'Faculty & Staff Management',
     'enquiries': 'Online Admission Enquiries',
     'messages': 'General Contact Messages',
     'media-library': 'Media Library Assets',

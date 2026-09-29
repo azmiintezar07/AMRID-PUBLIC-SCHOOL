@@ -175,7 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 4. DYNAMIC DATA LOADING AND RENDERING
   async function loadWebsiteContent() {
     try {
-      const res = await fetch('/data/content.json?t=' + new Date().getTime());
+      let res = await fetch('/data/content.json?t=' + new Date().getTime());
+      if (!res.ok) {
+        res = await fetch('/api/content?t=' + new Date().getTime());
+      }
       if (!res.ok) throw new Error('Failed to load JSON');
       
       websiteData = await res.json();
