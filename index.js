@@ -2,6 +2,17 @@
    AMRID PUBLIC SCHOOL - Core Application Logic
    ========================================================================== */
 
+// API base URL helper supporting VITE_API_URL or runtime window.__API_URL__
+const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL)
+  ? String(import.meta.env.VITE_API_URL).replace(/\/$/, '')
+  : ((typeof window !== 'undefined' && window.__API_URL__) ? String(window.__API_URL__).replace(/\/$/, '') : '');
+
+function getApiUrl(endpoint) {
+  if (!API_BASE) return endpoint;
+  const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${API_BASE}${path}`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   let websiteData = null;
@@ -175,9 +186,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // 4. DYNAMIC DATA LOADING AND RENDERING
   async function loadWebsiteContent() {
     try {
-      let res = await fetch('/data/content.json?t=' + new Date().getTime());
+      let res = await fetch(getApiUrl('/data/content.json?t=' + new Date().getTime()));
       if (!res.ok) {
-        res = await fetch('/api/content?t=' + new Date().getTime());
+        res = await fetch(getApiUrl('/api/content?t=' + new Date().getTime()));
       }
       if (!res.ok) throw new Error('Failed to load JSON');
       
@@ -1177,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let i = 0; i < elements.length; i++) elements[i].disabled = true;
 
       try {
-        const res = await fetch('/api/enquiry', {
+        const res = await fetch(getApiUrl('/api/enquiry'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1253,7 +1264,7 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let i = 0; i < elements.length; i++) elements[i].disabled = true;
 
       try {
-        const res = await fetch('/api/contact', {
+        const res = await fetch(getApiUrl('/api/contact'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)

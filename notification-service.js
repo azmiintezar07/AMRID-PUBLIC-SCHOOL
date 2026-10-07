@@ -74,7 +74,7 @@ function cleanPhoneNumber(phone) {
  * Send WhatsApp message via official Meta WhatsApp Cloud API
  */
 async function sendMetaWhatsApp(recipientPhone, messageText) {
-  const token = process.env.WHATSAPP_API_TOKEN;
+  const token = process.env.WHATSAPP_ACCESS_TOKEN || process.env.WHATSAPP_API_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
   if (!token || !phoneNumberId) {
@@ -122,8 +122,9 @@ async function sendMetaWhatsApp(recipientPhone, messageText) {
 async function sendTwilioMessage(recipientPhone, messageText, isWhatsApp = false) {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromWhatsApp = process.env.TWILIO_WHATSAPP_FROM; // e.g. 'whatsapp:+14155238886'
-  const fromSms = process.env.TWILIO_SMS_FROM;
+  const rawPhone = process.env.TWILIO_PHONE_NUMBER;
+  const fromWhatsApp = process.env.TWILIO_WHATSAPP_FROM || (rawPhone ? (rawPhone.startsWith('whatsapp:') ? rawPhone : `whatsapp:${rawPhone}`) : null);
+  const fromSms = process.env.TWILIO_SMS_FROM || rawPhone;
 
   if (!accountSid || !authToken) {
     return { success: false, status: 'skipped_no_config', message: 'Twilio credentials not configured' };
@@ -134,7 +135,7 @@ async function sendTwilioMessage(recipientPhone, messageText, isWhatsApp = false
   const from = isWhatsApp ? fromWhatsApp : fromSms;
 
   if (!from) {
-    return { success: false, status: 'skipped_no_config', message: `Twilio ${isWhatsApp ? 'WhatsApp' : 'SMS'} sender number not configured` };
+    return { success: false, status: 'skipped_no_config', message: `Twilio ${isWhatsApp ? 'WhatsApp' : 'SMS'} sender number (TWILIO_PHONE_NUMBER) not configured` };
   }
 
   const endpoint = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;

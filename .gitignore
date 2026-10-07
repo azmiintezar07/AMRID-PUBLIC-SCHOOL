@@ -3,13 +3,22 @@ node_modules/
 
 # Environment Variables & Secrets
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 
-# Build Outputs
-# dist/ is tracked if needed for production static serving, but can be kept or excluded as per repo conventions.
+# Production Build Output
+dist/
 
-# Scratch & Temporary Logs
-scratch/
+# Logs & Temporary Files
+logs/
 *.log
+
+# IDE & OS Files
 .DS_Store
+Thumbs.db
+
+# Chrome / Test Binaries
+chrome/
+
+# Scratch & Temporary Notes
+scratch/

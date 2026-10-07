@@ -128,12 +128,12 @@
     },
     {
       "id": "staff-teach-3",
-      "name": "Faculty Member (Editable in Admin)",
+      "name": "Kaunain Raza",
       "designation": "Science & Environmental Studies Teacher",
       "category": "teaching",
       "subject": "Science & EVS",
-      "qualification": "B.Sc., D.El.Ed.",
-      "experience": "5+ Years",
+      "qualification": "B.A ,B.ed",
+      "experience": "4+ Years",
       "photo_url": "",
       "bio": "Engages students through hands-on demonstrations, observational experiments, and curiosity-driven science learning.",
       "order": 5,
@@ -236,27 +236,16 @@
   ],
   "gallery": [
     {
-      "id": "gal-1",
+      "id": "gal-2",
       "type": "image",
       "category": "classroom",
-      "url": "/uploads/media-1790433349372-223620042.jpeg",
-      "title": "Main Campus Building",
-      "description": "Front facade of AMRID Public School campus with lush lawns and arched architecture.",
+      "url": "/uploads/media-1790511334655-706360947.jpeg",
+      "title": "Modern Interactive Classrooms",
+      "description": "Bright, engaging classroom environment with modern visual learning facilities.",
       "is_featured": true,
       "order": 1,
       "is_published": true,
       "thumbnail_url": ""
-    },
-    {
-      "id": "gal-2",
-      "type": "image",
-      "category": "classrooms",
-      "url": "/uploads/school-classroom.jpg",
-      "title": "Modern Interactive Classrooms",
-      "description": "Bright, engaging classroom environment with modern visual learning facilities.",
-      "is_featured": true,
-      "order": 2,
-      "is_published": true
     },
     {
       "id": "gal-3",
@@ -266,7 +255,7 @@
       "title": "Clean Residential Hostel Rooms",
       "description": "Neat, comfortable, and well-ventilated dormitories for residential students.",
       "is_featured": true,
-      "order": 3,
+      "order": 2,
       "is_published": true
     },
     {
@@ -277,7 +266,7 @@
       "title": "School Celebrations & Programs",
       "description": "Students actively participating in annual activities and school assemblies.",
       "is_featured": true,
-      "order": 4,
+      "order": 3,
       "is_published": false
     }
   ]

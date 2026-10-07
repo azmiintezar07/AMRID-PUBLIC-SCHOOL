@@ -1,5 +1,51 @@
 // AMRID PUBLIC SCHOOL - Admin Panel Core Application Logic
 
+// API base URL configuration: supports VITE_API_URL or runtime window.__API_URL__
+const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL)
+  ? String(import.meta.env.VITE_API_URL).replace(/\/$/, '')
+  : ((typeof window !== 'undefined' && window.__API_URL__) ? String(window.__API_URL__).replace(/\/$/, '') : '');
+
+function getApiUrl(endpoint) {
+  if (!API_BASE) return endpoint;
+  const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${API_BASE}${path}`;
+}
+
+// Production API fetch wrapper:
+// - Handles VITE_API_URL prefixing
+// - Sets credentials: 'include' for cross-domain / production HTTP-only cookies
+// - Automatically attaches stored JWT token in Authorization: Bearer header
+async function apiFetch(endpoint, options = {}) {
+  const url = getApiUrl(endpoint);
+  const token = sessionStorage.getItem('aps_admin_token') || localStorage.getItem('aps_admin_token');
+
+  const headers = {
+    ...(options.headers || {})
+  };
+
+  if (token && !headers['Authorization'] && !headers['authorization']) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const mergedOptions = {
+    ...options,
+    credentials: 'include',
+    headers
+  };
+
+  const response = await fetch(url, mergedOptions);
+
+  if (response.status === 401 || response.status === 403) {
+    if (endpoint !== '/api/login' && endpoint !== '/api/check-session') {
+      sessionStorage.removeItem('aps_admin_token');
+      localStorage.removeItem('aps_admin_token');
+      showLogin();
+    }
+  }
+
+  return response;
+}
+
 let contentData = null;
 let submissionData = null;
 let mediaLibrary = [];
@@ -166,7 +212,7 @@ window.uploadFileDirectly = async function(input, urlInputId, previewImgId) {
   showToast('Uploading file...', 'info');
   
   try {
-    const res = await fetch('/api/upload', {
+    const res = await apiFetch('/api/upload', {
       method: 'POST',
       body: formData
     });
@@ -185,7 +231,7 @@ window.uploadFileDirectly = async function(input, urlInputId, previewImgId) {
       showToast('File uploaded successfully!', 'success');
       
       // Sync media library cache
-      const mediaRes = await fetch('/api/media');
+      const mediaRes = await apiFetch('/api/media');
       mediaLibrary = await mediaRes.json();
       if (activeTab === 'media-library') {
         renderMediaLibraryTab();
@@ -243,7 +289,7 @@ async function initApp() {
 
 async function checkSession() {
   try {
-    const res = await fetch('/api/check-session');
+    const res = await apiFetch('/api/check-session');
     const data = await res.json();
     if (data.success) {
       document.getElementById('logged-username').textContent = data.username;
@@ -269,7 +315,7 @@ function showDashboard() {
 async function loadAllData() {
   try {
     // 1. Load website editable content
-    const contentRes = await fetch('/api/content');
+    const contentRes = await apiFetch('/api/content');
     contentData = await contentRes.json();
     if (contentData) {
       contentData.notices = contentData.notices || [];
@@ -294,7 +340,7 @@ async function loadAllData() {
     }
 
     // 2. Load enquiries and contact messages
-    const submissionsRes = await fetch('/api/submissions');
+    const submissionsRes = await apiFetch('/api/submissions');
     submissionData = await submissionsRes.json();
     if (submissionData) {
       submissionData.enquiries = submissionData.enquiries || [];
@@ -302,7 +348,7 @@ async function loadAllData() {
     }
 
     // 3. Load media assets
-    const mediaRes = await fetch('/api/media');
+    const mediaRes = await apiFetch('/api/media');
     mediaLibrary = await mediaRes.json();
     mediaLibrary = mediaLibrary || [];
 
@@ -469,7 +515,7 @@ async function handleLoginSubmit(e) {
   errorAlert.style.display = 'none';
 
   try {
-    const res = await fetch('/api/login', {
+    const res = await apiFetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -480,6 +526,9 @@ async function handleLoginSubmit(e) {
 
     const data = await res.json();
     if (data.success) {
+      if (data.token) {
+        sessionStorage.setItem('aps_admin_token', data.token);
+      }
       document.getElementById('logged-username').textContent = data.username;
       passwordInput.value = '';
       showDashboard();
@@ -500,13 +549,17 @@ async function handleLogout(e) {
   e.preventDefault();
   showConfirm('Are you sure you want to securely log out?', async () => {
     try {
-      const res = await fetch('/api/logout', { method: 'POST' });
+      const res = await apiFetch('/api/logout', { method: 'POST' });
       const data = await res.json();
+      sessionStorage.removeItem('aps_admin_token');
+      localStorage.removeItem('aps_admin_token');
       if (data.success) {
         showLogin();
       }
     } catch (err) {
       console.error('Logout error:', err);
+      sessionStorage.removeItem('aps_admin_token');
+      localStorage.removeItem('aps_admin_token');
       showLogin(); // Force show login anyway
     }
   });
@@ -2668,7 +2721,7 @@ async function saveEnquiryNoteAndStatus(id) {
   if (saveBtn) setButtonLoading(saveBtn, 'Saving...');
 
   try {
-    const res = await fetch('/api/enquiry-note', {
+    const res = await apiFetch('/api/enquiry-note', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2840,7 +2893,7 @@ async function openMessageDetailsModal(id) {
     renderDashboardOverview();
     
     try {
-      await fetch('/api/update-submission', {
+      await apiFetch('/api/update-submission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'message', id: id, status: 'read', is_read: true })
@@ -2862,7 +2915,7 @@ async function toggleMessageReadState(id) {
   renderDashboardOverview();
 
   try {
-    await fetch('/api/update-submission', {
+    await apiFetch('/api/update-submission', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'message', id: id, status: msg.status, is_read: msg.is_read })
@@ -2874,7 +2927,7 @@ async function toggleMessageReadState(id) {
 
 async function updateSubmissionStatus(type, id, newStatus) {
   try {
-    const res = await fetch('/api/update-submission', {
+    const res = await apiFetch('/api/update-submission', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type, id, status: newStatus })
@@ -2909,7 +2962,7 @@ async function updateSubmissionStatus(type, id, newStatus) {
 async function deleteSubmission(type, id) {
   showConfirm(`Are you sure you want to permanently delete this ${type === 'enquiry' ? 'admission enquiry' : 'contact message'}?`, async () => {
     try {
-      const res = await fetch('/api/submission', {
+      const res = await apiFetch('/api/submission', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type, id })
@@ -3004,13 +3057,13 @@ async function handleMediaUpload(input) {
   showToast('Uploading files...', 'info');
 
   try {
-    const res = await fetch('/api/upload', {
+    const res = await apiFetch('/api/upload', {
       method: 'POST',
       body: formData
     });
     const data = await res.json();
     if (data.success) {
-      const mediaRes = await fetch('/api/media');
+      const mediaRes = await apiFetch('/api/media');
       mediaLibrary = await mediaRes.json();
       renderMediaLibraryTab();
       showToast(`Successfully uploaded ${data.files.length} file(s)!`, 'success');
@@ -3029,7 +3082,7 @@ async function handleMediaUpload(input) {
 async function deleteMediaFile(name) {
   showConfirm(`Are you sure you want to permanently delete '${name}'? This will break any page reference that displays it.`, async () => {
     try {
-      const res = await fetch(`/api/media/${name}`, {
+      const res = await apiFetch(`/api/media/${name}`, {
         method: 'DELETE'
       });
       const data = await res.json();
@@ -3150,7 +3203,7 @@ function selectMediaForInput(url) {
 // Write updated `contentData` back to the server database
 async function saveContentData(successMessage, callback) {
   try {
-    const res = await fetch('/api/save-content', {
+    const res = await apiFetch('/api/save-content', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(contentData)
